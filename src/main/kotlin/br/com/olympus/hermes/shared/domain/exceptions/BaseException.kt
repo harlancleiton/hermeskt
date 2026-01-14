@@ -1,5 +1,7 @@
 package br.com.olympus.hermes.shared.domain.exceptions
 
+import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
+
 /**
  * Base sealed class for all application exceptions in the Hermes system.
  * 
@@ -7,10 +9,12 @@ package br.com.olympus.hermes.shared.domain.exceptions
  * exceptions into client errors (4xx) and server errors (5xx). The sealed nature ensures
  * that all exceptions extend from either ClientException or ServerException.
  *
+ * @param id The unique identifier for this exception (default is a generated EntityId)
  * @param message The detail message for this exception
  * @param cause The cause of this exception (can be null)
  */
-sealed class BaseException(message: String, cause: Throwable? = null) : Exception(message, cause) {
+sealed class BaseException(val id: EntityId = EntityId.generate(), message: String, cause: Throwable? = null) :
+    Exception(message, cause) {
 
     /**
      * Determines if this exception represents a client error.
@@ -37,7 +41,8 @@ sealed class BaseException(message: String, cause: Throwable? = null) : Exceptio
      * @param message The detail message for this client exception
      * @param cause The cause of this exception (can be null)
      */
-    abstract class ClientException(message: String, cause: Throwable? = null) : BaseException(message, cause) {
+    abstract class ClientException(message: String, cause: Throwable? = null) :
+        BaseException(message = message, cause = cause) {
 
         /**
          * Always returns true for client exceptions.
@@ -63,7 +68,8 @@ sealed class BaseException(message: String, cause: Throwable? = null) : Exceptio
      * @param message The detail message for this server exception
      * @param cause The cause of this exception (can be null)
      */
-    abstract class ServerException(message: String, cause: Throwable? = null) : BaseException(message, cause) {
+    abstract class ServerException(message: String, cause: Throwable? = null) :
+        BaseException(message = message, cause = cause) {
 
         /**
          * Always returns false for server exceptions.
