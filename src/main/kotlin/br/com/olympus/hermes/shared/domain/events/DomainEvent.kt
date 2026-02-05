@@ -1,6 +1,7 @@
 package br.com.olympus.hermes.shared.domain.events
 
 import br.com.olympus.hermes.shared.domain.valueobjects.Email
+import br.com.olympus.hermes.shared.domain.valueobjects.EmailSubject
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import java.util.*
 
@@ -59,8 +60,7 @@ data class EmailNotificationCreatedEvent(
     override val payload: Map<String, Any>,
     val from: Email,
     val to: Email,
-    // TODO add EmailSubject value object
-    val subject: String,
+    val subject: EmailSubject,
 ) : NotificationCreatedEvent {
     override val aggregateType = "Notification"
     override val eventType = "EmailNotificationCreatedEvent"

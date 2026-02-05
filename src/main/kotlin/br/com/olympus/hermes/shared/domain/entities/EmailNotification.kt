@@ -2,6 +2,7 @@ package br.com.olympus.hermes.shared.domain.entities
 
 import br.com.olympus.hermes.shared.domain.events.EmailNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.valueobjects.Email
+import br.com.olympus.hermes.shared.domain.valueobjects.EmailSubject
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import java.util.*
 
@@ -17,7 +18,7 @@ class EmailNotification(
     updatedAt: Date,
     val from: Email,
     val to: Email,
-    val subject: String,
+    val subject: EmailSubject,
     private val isNew: Boolean
 ) : Notification(
     content = content,
