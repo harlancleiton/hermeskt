@@ -1,7 +1,7 @@
 package br.com.olympus.hermes.shared.domain.exceptions
 
 
-sealed interface BaseException {
+sealed interface BaseError {
     val message: String
 
     val cause: Throwable?
@@ -11,7 +11,7 @@ sealed interface BaseException {
     fun isServerError(): Boolean
 }
 
-sealed interface ClientException : BaseException {
+sealed interface ClientError : BaseError {
     override val cause: Throwable? get() = null
 
     override fun isClientError() = true
@@ -19,24 +19,24 @@ sealed interface ClientException : BaseException {
     override fun isServerError() = false
 }
 
-interface ServerException : BaseException {
+interface ServerError : BaseError {
     override fun isClientError() = false
 
     override fun isServerError() = true
 }
 
-data class InvalidEmail(val value: String) : ClientException {
+data class InvalidEmailError(val value: String) : ClientError {
     override val message = "The provided value '$value' is not a valid email."
 
     override val cause: Throwable?
         get() = null
 }
 
-data class InvalidEmailSubject(override val message: String) : ClientException {
+data class InvalidEmailSubjectError(override val message: String) : ClientError {
     override val cause: Throwable?
         get() = null
 }
 
-data class InvalidUUID(val value: String, override val cause: Throwable?) : ServerException {
+data class InvalidUUIDError(val value: String, override val cause: Throwable?) : ServerError {
     override val message = "The provided value '$value' is not a valid UUID."
 }
