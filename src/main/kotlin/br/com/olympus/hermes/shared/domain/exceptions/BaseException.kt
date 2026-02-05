@@ -1,88 +1,37 @@
 package br.com.olympus.hermes.shared.domain.exceptions
 
-import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 
-/**
- * Base sealed class for all application exceptions in the Hermes system.
- * 
- * This sealed class provides a common foundation for exception handling by categorizing
- * exceptions into client errors (4xx) and server errors (5xx). The sealed nature ensures
- * that all exceptions extend from either ClientException or ServerException.
- *
- * @param id The unique identifier for this exception (default is a generated EntityId)
- * @param message The detail message for this exception
- * @param cause The cause of this exception (can be null)
- */
-sealed class BaseException(val id: EntityId = EntityId.generate(), message: String, cause: Throwable? = null) :
-    Exception(message, cause) {
+sealed interface BaseException {
+    val message: String
 
-    /**
-     * Determines if this exception represents a client error.
-     * Client errors typically indicate problems with the request made by the client.
-     *
-     * @return true if this is a client error, false otherwise
-     */
-    abstract fun isClientError(): Boolean
+    val cause: Throwable?
 
-    /**
-     * Determines if this exception represents a server error.
-     * Server errors typically indicate problems on the server side.
-     *
-     * @return true if this is a server error, false otherwise
-     */
-    abstract fun isServerError(): Boolean
+    fun isClientError(): Boolean
 
-    /**
-     * Abstract base class for client-side exceptions (typically 4xx HTTP status codes).
-     * 
-     * Client exceptions indicate that the error is due to something the client did,
-     * such as providing invalid data, unauthorized access, or requesting a non-existent resource.
-     *
-     * @param message The detail message for this client exception
-     * @param cause The cause of this exception (can be null)
-     */
-    abstract class ClientException(message: String, cause: Throwable? = null) :
-        BaseException(message = message, cause = cause) {
+    fun isServerError(): Boolean
+}
 
-        /**
-         * Always returns true for client exceptions.
-         *
-         * @return true indicating this is a client error
-         */
-        override fun isClientError() = true
+sealed interface ClientException : BaseException {
+    override val cause: Throwable? get() = null
 
-        /**
-         * Always returns false for client exceptions.
-         *
-         * @return false indicating this is not a server error
-         */
-        override fun isServerError() = false
-    }
+    override fun isClientError() = true
 
-    /**
-     * Abstract base class for server-side exceptions (typically 5xx HTTP status codes).
-     * 
-     * Server exceptions indicate that the error occurred due to a server-side issue,
-     * such as internal server errors, service unavailability, or database connection problems.
-     *
-     * @param message The detail message for this server exception
-     * @param cause The cause of this exception (can be null)
-     */
-    abstract class ServerException(message: String, cause: Throwable? = null) :
-        BaseException(message = message, cause = cause) {
+    override fun isServerError() = false
+}
 
-        /**
-         * Always returns false for server exceptions.
-         *
-         * @return false indicating this is not a client error
-         */
-        override fun isClientError() = false
+interface ServerException : BaseException {
+    override fun isClientError() = false
 
-        /**
-         * Always returns true for server exceptions.
-         *
-         * @return true indicating this is a server error
-         */
-        override fun isServerError() = true
-    }
+    override fun isServerError() = true
+}
+
+data class InvalidEmail(val value: String) : ClientException {
+    override val message = "The provided value '$value' is not a valid email."
+
+    override val cause: Throwable?
+        get() = null
+}
+
+data class InvalidUUID(val value: String, override val cause: Throwable?) : ServerException {
+    override val message = "The provided value '$value' is not a valid UUID."
 }
