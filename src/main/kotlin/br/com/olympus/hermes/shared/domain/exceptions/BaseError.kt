@@ -40,3 +40,10 @@ data class InvalidEmailSubjectError(override val message: String) : ClientError 
 data class InvalidUUIDError(val value: String, override val cause: Throwable?) : ServerError {
     override val message = "The provided value '$value' is not a valid UUID."
 }
+
+data class InvalidPhoneError(val value: String) : ClientError {
+    override val message = "The provided value '$value' is not a valid phone number."
+
+    override val cause: Throwable?
+        get() = null
+}
