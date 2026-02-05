@@ -32,6 +32,11 @@ data class InvalidEmail(val value: String) : ClientException {
         get() = null
 }
 
+data class InvalidEmailSubject(override val message: String) : ClientException {
+    override val cause: Throwable?
+        get() = null
+}
+
 data class InvalidUUID(val value: String, override val cause: Throwable?) : ServerException {
     override val message = "The provided value '$value' is not a valid UUID."
 }
