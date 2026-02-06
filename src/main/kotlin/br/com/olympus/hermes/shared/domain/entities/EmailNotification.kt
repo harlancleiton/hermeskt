@@ -35,7 +35,7 @@ class EmailNotification(
         if (isNew) {
             applyChange(
                 EmailNotificationCreatedEvent(
-                    EntityId.generate(), id, version, Date(), content, payload, from, to, subject
+                    EntityId.generate(), id, version, createdAt, content, payload, from, to, subject
                 )
             )
         }
