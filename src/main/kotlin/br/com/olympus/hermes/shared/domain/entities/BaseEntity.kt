@@ -1,4 +1,4 @@
-package br.com.olympus.hermes.shared.domain.entities;
+package br.com.olympus.hermes.shared.domain.entities
 
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import java.util.*
