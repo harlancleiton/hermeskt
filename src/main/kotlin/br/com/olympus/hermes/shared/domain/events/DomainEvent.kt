@@ -1,5 +1,6 @@
 package br.com.olympus.hermes.shared.domain.events
 
+import br.com.olympus.hermes.shared.domain.valueobjects.BrazilianPhone
 import br.com.olympus.hermes.shared.domain.valueobjects.Email
 import br.com.olympus.hermes.shared.domain.valueobjects.EmailSubject
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
@@ -74,8 +75,8 @@ data class SMSNotificationCreatedEvent(
     override val content: String,
     override val payload: Map<String, Any>,
     // TODO add PhoneNumber value object
-    val from: Int,
-    val to: Int,
+    val from: UInt,
+    val to: BrazilianPhone,
 ) : NotificationCreatedEvent {
     override val aggregateType = "Notification"
     override val eventType = "SMSNotificationCreatedEvent"
