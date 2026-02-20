@@ -1,8 +1,8 @@
 package br.com.olympus.hermes.shared.domain.factories
 
 /**
- * Enumeration of supported notification types in the system.
- * Each type corresponds to a different notification channel.
+ * Enumeration of supported notification types in the system. Each type corresponds to a different
+ * notification channel.
  */
 enum class NotificationType {
     /** Email notification channel */
@@ -15,5 +15,5 @@ enum class NotificationType {
     PUSH,
 
     /** WhatsApp notification channel */
-    WHATSAPP;
+    WHATSAPP
 }

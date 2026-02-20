@@ -8,15 +8,15 @@ import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import java.util.*
 
 /**
- * Factory interface for creating and reconstituting notification entities.
- * Uses functional error handling with ArrowKT's Either to handle domain errors explicitly.
+ * Factory interface for creating and reconstituting notification entities. Uses functional error
+ * handling with ArrowKT's Either to handle domain errors explicitly.
  *
  * @param T The type of notification this factory creates.
  */
 interface NotificationFactory<T : Notification> {
     /**
-     * Creates a new notification instance with the provided data.
-     * Validates all input parameters and returns either a validation error or a valid notification.
+     * Creates a new notification instance with the provided data. Validates all input parameters
+     * and returns either a validation error or a valid notification.
      *
      * @param content The content of the notification. Must not be blank.
      * @param payload Additional payload data for the notification. Defaults to empty map.
@@ -25,10 +25,10 @@ interface NotificationFactory<T : Notification> {
      * @return Either a BaseError (Left) or the created notification (Right).
      */
     fun create(
-        content: String,
-        payload: Map<String, Any> = emptyMap(),
-        id: EntityId? = null,
-        createdAt: Date? = null
+            content: String,
+            payload: Map<String, Any> = emptyMap(),
+            id: EntityId? = null,
+            createdAt: Date? = null
     ): Either<BaseError, T>
 
     /**
@@ -40,4 +40,3 @@ interface NotificationFactory<T : Notification> {
      */
     fun reconstitute(events: List<DomainEvent>): Either<BaseError, T>
 }
-

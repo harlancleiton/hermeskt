@@ -3,8 +3,8 @@ package br.com.olympus.hermes.shared.domain.exceptions
 import br.com.olympus.hermes.shared.domain.factories.NotificationType
 
 /**
- * Sealed interface representing all domain errors in the system.
- * All error types must extend this interface to enable type-safe error handling with ArrowKT.
+ * Sealed interface representing all domain errors in the system. All error types must extend this
+ * interface to enable type-safe error handling with ArrowKT.
  */
 sealed interface BaseError {
     val message: String
@@ -17,11 +17,12 @@ sealed interface BaseError {
 }
 
 /**
- * Sealed interface for client errors (4xx HTTP status codes).
- * These errors indicate issues with the request or input data.
+ * Sealed interface for client errors (4xx HTTP status codes). These errors indicate issues with the
+ * request or input data.
  */
 sealed interface ClientError : BaseError {
-    override val cause: Throwable? get() = null
+    override val cause: Throwable?
+        get() = null
 
     override fun isClientError() = true
 
@@ -29,8 +30,8 @@ sealed interface ClientError : BaseError {
 }
 
 /**
- * Interface for server errors (5xx HTTP status codes).
- * These errors indicate internal server issues or unexpected conditions.
+ * Interface for server errors (5xx HTTP status codes). These errors indicate internal server issues
+ * or unexpected conditions.
  */
 interface ServerError : BaseError {
     override fun isClientError() = false

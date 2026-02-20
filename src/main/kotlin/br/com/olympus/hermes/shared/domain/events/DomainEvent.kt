@@ -16,67 +16,66 @@ sealed interface DomainEvent {
 }
 
 data class NotificationSentEvent(
-    override val id: EntityId,
-    override val aggregateId: EntityId,
-    override val aggregateVersion: Int,
-    override val occurredAt: Date,
-    val shippingReceipt: Any
+        override val id: EntityId,
+        override val aggregateId: EntityId,
+        override val aggregateVersion: Int,
+        override val occurredAt: Date,
+        val shippingReceipt: Any
 ) : DomainEvent {
     override val aggregateType = "Notification"
     override val eventType = "NotificationSentEvent"
 }
 
 data class NotificationSeenEvent(
-    override val id: EntityId,
-    override val aggregateId: EntityId,
-    override val aggregateVersion: Int,
-    override val occurredAt: Date
+        override val id: EntityId,
+        override val aggregateId: EntityId,
+        override val aggregateVersion: Int,
+        override val occurredAt: Date
 ) : DomainEvent {
     override val aggregateType = "Notification"
     override val eventType = "NotificationSeenEvent"
 }
 
 data class NotificationDeliveredEvent(
-    override val id: EntityId,
-    override val aggregateId: EntityId,
-    override val aggregateVersion: Int,
-    override val occurredAt: Date
+        override val id: EntityId,
+        override val aggregateId: EntityId,
+        override val aggregateVersion: Int,
+        override val occurredAt: Date
 ) : DomainEvent {
     override val aggregateType = "Notification"
     override val eventType = "NotificationDeliveredEvent"
 }
 
-sealed interface NotificationCreatedEvent
-    : DomainEvent {
+sealed interface NotificationCreatedEvent : DomainEvent {
     val content: String
     val payload: Map<String, Any>
 }
 
 data class EmailNotificationCreatedEvent(
-    override val id: EntityId,
-    override val aggregateId: EntityId,
-    override val aggregateVersion: Int,
-    override val occurredAt: Date,
-    override val content: String,
-    override val payload: Map<String, Any>,
-    val from: Email,
-    val to: Email,
-    val subject: EmailSubject,
+        override val id: EntityId,
+        override val aggregateId: EntityId,
+        override val aggregateVersion: Int,
+        override val occurredAt: Date,
+        override val content: String,
+        override val payload: Map<String, Any>,
+        val from: Email,
+        val to: Email,
+        val subject: EmailSubject,
 ) : NotificationCreatedEvent {
     override val aggregateType = "Notification"
     override val eventType = "EmailNotificationCreatedEvent"
 }
 
 data class SMSNotificationCreatedEvent(
-    override val id: EntityId,
-    override val aggregateId: EntityId,
-    override val aggregateVersion: Int,
-    override val occurredAt: Date,
-    override val content: String,
-    override val payload: Map<String, Any>,
-    // TODO add PhoneNumber value object
-    val from: UInt,
-    val to: BrazilianPhone,
+        override val id: EntityId,
+        override val aggregateId: EntityId,
+        override val aggregateVersion: Int,
+        override val occurredAt: Date,
+        override val content: String,
+        override val payload: Map<String, Any>,
+        // TODO add PhoneNumber value object
+        val from: UInt,
+        val to: BrazilianPhone,
 ) : NotificationCreatedEvent {
     override val aggregateType = "Notification"
     override val eventType = "SMSNotificationCreatedEvent"

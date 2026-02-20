@@ -11,8 +11,12 @@ value class EmailSubject private constructor(val subject: String) {
         fun create(subject: String): Either<InvalidEmailSubjectError, EmailSubject> {
             val trimmed = subject.trim()
             return when {
-                trimmed.isEmpty() -> Either.Left(InvalidEmailSubjectError("Subject cannot be empty"))
-                trimmed.length > MAX_LENGTH -> Either.Left(InvalidEmailSubjectError("Subject cannot exceed 255 characters"))
+                trimmed.isEmpty() ->
+                        Either.Left(InvalidEmailSubjectError("Subject cannot be empty"))
+                trimmed.length > MAX_LENGTH ->
+                        Either.Left(
+                                InvalidEmailSubjectError("Subject cannot exceed 255 characters")
+                        )
                 else -> Either.Right(EmailSubject(trimmed))
             }
         }

@@ -9,24 +9,24 @@ import br.com.olympus.hermes.shared.domain.exceptions.FactoryAlreadyRegisteredEr
 import br.com.olympus.hermes.shared.domain.exceptions.FactoryNotFoundError
 
 /**
- * Registry for managing notification factories.
- * Provides type-safe factory registration and retrieval using functional error handling.
- * Implements the Factory pattern with a registry to decouple notification creation from specific factory implementations.
+ * Registry for managing notification factories. Provides type-safe factory registration and
+ * retrieval using functional error handling. Implements the Factory pattern with a registry to
+ * decouple notification creation from specific factory implementations.
  */
 class NotificationFactoryRegistry {
     private val factories = mutableMapOf<NotificationType, NotificationFactory<out Notification>>()
 
     /**
-     * Registers a factory for a specific notification type.
-     * Returns an error if a factory for the type is already registered.
+     * Registers a factory for a specific notification type. Returns an error if a factory for the
+     * type is already registered.
      *
      * @param type The notification type.
      * @param factory The factory instance to register.
      * @return Either FactoryAlreadyRegisteredError if already registered, or Unit on success.
      */
     fun <T : Notification> register(
-        type: NotificationType,
-        factory: NotificationFactory<T>
+            type: NotificationType,
+            factory: NotificationFactory<T>
     ): Either<BaseError, Unit> {
         return if (factories.containsKey(type)) {
             FactoryAlreadyRegisteredError(type).left()
@@ -37,13 +37,16 @@ class NotificationFactoryRegistry {
     }
 
     /**
-     * Registers a factory for a specific notification type, replacing any existing factory.
-     * Always succeeds.
+     * Registers a factory for a specific notification type, replacing any existing factory. Always
+     * succeeds.
      *
      * @param type The notification type.
      * @param factory The factory instance to register.
      */
-    fun <T : Notification> registerOrReplace(type: NotificationType, factory: NotificationFactory<T>) {
+    fun <T : Notification> registerOrReplace(
+            type: NotificationType,
+            factory: NotificationFactory<T>
+    ) {
         factories[type] = factory
     }
 
@@ -58,14 +61,16 @@ class NotificationFactoryRegistry {
     }
 
     /**
-     * Retrieves a factory for a specific notification type.
-     * Returns an error if no factory is registered for the type.
+     * Retrieves a factory for a specific notification type. Returns an error if no factory is
+     * registered for the type.
      *
      * @param type The notification type.
      * @return Either FactoryNotFoundError if not found, or the factory instance.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Notification> getFactory(type: NotificationType): Either<BaseError, NotificationFactory<T>> {
+    fun <T : Notification> getFactory(
+            type: NotificationType
+    ): Either<BaseError, NotificationFactory<T>> {
         val factory = factories[type] as? NotificationFactory<T>
         return factory?.right() ?: FactoryNotFoundError(type).left()
     }
@@ -90,11 +95,9 @@ class NotificationFactoryRegistry {
     }
 
     /**
-     * Clears all registered factories.
-     * Use with caution - primarily intended for testing purposes.
+     * Clears all registered factories. Use with caution - primarily intended for testing purposes.
      */
     fun clear() {
         factories.clear()
     }
 }
-
