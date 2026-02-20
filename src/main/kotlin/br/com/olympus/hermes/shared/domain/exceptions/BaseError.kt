@@ -40,6 +40,31 @@ interface ServerError : BaseError {
 }
 
 // ========================================
+// Validation Errors
+// ========================================
+
+/**
+ * Error representing accumulated validation failures. Wraps a [List] of [BaseError] produced by
+ * ArrowKT's `zipOrAccumulate` during factory validation.
+ *
+ * @property errors The list of individual validation errors.
+ */
+data class ValidationErrors(val errors: List<BaseError>) : ClientError {
+    override val message: String = "Validation failed: ${errors.joinToString("; ") { it.message }}"
+}
+
+/**
+ * Error indicating that the factory received an input subtype it does not support.
+ *
+ * @property expected The expected input type name.
+ * @property actual The actual input type name received.
+ */
+data class InvalidNotificationInputError(val expected: String, val actual: String) : ClientError {
+    override val message: String =
+            "Invalid notification input: expected '$expected', got '$actual'."
+}
+
+// ========================================
 // Value Object Errors
 // ========================================
 

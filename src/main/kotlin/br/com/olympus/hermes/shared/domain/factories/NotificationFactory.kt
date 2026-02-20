@@ -4,32 +4,26 @@ import arrow.core.Either
 import br.com.olympus.hermes.shared.domain.entities.Notification
 import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
-import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
-import java.util.*
+import br.com.olympus.hermes.shared.domain.exceptions.ValidationErrors
 
 /**
  * Factory interface for creating and reconstituting notification entities. Uses functional error
- * handling with ArrowKT's Either to handle domain errors explicitly.
+ * handling with ArrowKT's Either and `zipOrAccumulate` to validate all input fields and accumulate
+ * errors explicitly.
  *
  * @param T The type of notification this factory creates.
  */
 interface NotificationFactory<T : Notification> {
     /**
-     * Creates a new notification instance with the provided data. Validates all input parameters
-     * and returns either a validation error or a valid notification.
+     * Creates a new notification instance from raw input data. Validates all fields using
+     * `zipOrAccumulate` and returns either a non-empty list of accumulated validation errors or a
+     * valid notification.
      *
-     * @param content The content of the notification. Must not be blank.
-     * @param payload Additional payload data for the notification. Defaults to empty map.
-     * @param id Optional entity ID. If not provided, a new ID will be generated.
-     * @param createdAt Optional creation timestamp. If not provided, current time will be used.
-     * @return Either a BaseError (Left) or the created notification (Right).
+     * @param input The raw input data containing primitive types to be validated.
+     * @return Either a [List] of [BaseError] on validation failure, or the created notification on
+     * success.
      */
-    fun create(
-            content: String,
-            payload: Map<String, Any> = emptyMap(),
-            id: EntityId? = null,
-            createdAt: Date? = null
-    ): Either<BaseError, T>
+    fun create(input: CreateNotificationInput): Either<ValidationErrors, T>
 
     /**
      * Reconstitutes a notification entity from its event history (Event Sourcing pattern).
