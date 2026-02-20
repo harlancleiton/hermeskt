@@ -21,6 +21,7 @@ abstract class AggregateRoot protected constructor(id: EntityId, createdAt: Date
             return
         }
 
+        // TODO Publish events
         version += changes.size
         changes.clear()
     }
