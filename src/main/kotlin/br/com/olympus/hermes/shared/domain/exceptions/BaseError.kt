@@ -121,3 +121,27 @@ data class MissingCreationEventError(val expectedEventType: String) : ServerErro
     override val message: String = "Event history must contain $expectedEventType"
     override val cause: Throwable? = null
 }
+
+// ========================================
+// Infrastructure Errors
+// ========================================
+
+/**
+ * Error indicating a failure during notification persistence.
+ *
+ * @property reason A description of the persistence failure.
+ */
+data class PersistenceError(val reason: String, override val cause: Throwable? = null) :
+        ServerError {
+    override val message: String = "Failed to persist notification: $reason"
+}
+
+/**
+ * Error indicating a failure during domain event publishing.
+ *
+ * @property reason A description of the publishing failure.
+ */
+data class EventPublishingError(val reason: String, override val cause: Throwable? = null) :
+        ServerError {
+    override val message: String = "Failed to publish domain event: $reason"
+}
