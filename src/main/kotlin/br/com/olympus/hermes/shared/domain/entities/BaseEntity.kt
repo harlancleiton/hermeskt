@@ -4,10 +4,14 @@ import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import java.util.*
 
 abstract class BaseEntity protected constructor(
-    protected val id: EntityId = EntityId.generate(),
-    protected val createdAt: Date = Date(),
-    protected var updatedAt: Date = Date()
+    val id: EntityId = EntityId.generate(),
+    val createdAt: Date = Date(),
+    updatedAt: Date = Date()
 ) {
+    var updatedAt = updatedAt
+        protected set
+
+    public
     override fun equals(other: Any?): Boolean {
         if (other == null) return false
         if (other !is BaseEntity) return false
