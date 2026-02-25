@@ -7,14 +7,21 @@ import br.com.olympus.hermes.shared.domain.entities.Notification
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.FactoryAlreadyRegisteredError
 import br.com.olympus.hermes.shared.domain.exceptions.FactoryNotFoundError
+import jakarta.enterprise.context.ApplicationScoped
 
 /**
  * Registry for managing notification factories. Provides type-safe factory registration and
  * retrieval using functional error handling. Implements the Factory pattern with a registry to
  * decouple notification creation from specific factory implementations.
  */
+@ApplicationScoped
 class NotificationFactoryRegistry {
     private val factories = mutableMapOf<NotificationType, NotificationFactory<out Notification>>()
+
+    init {
+        register(NotificationType.EMAIL, EmailNotificationFactory())
+        register(NotificationType.SMS, SmsNotificationFactory())
+    }
 
     /**
      * Registers a factory for a specific notification type. Returns an error if a factory for the

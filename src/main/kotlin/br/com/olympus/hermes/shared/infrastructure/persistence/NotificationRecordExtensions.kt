@@ -20,7 +20,8 @@ internal fun NotificationRecord.writeCommonFields(
         type: String,
         objectMapper: ObjectMapper
 ) {
-    this.id = notification.id.value.toString()
+    this.pk = notification.id.value.toString()
+    this.sk = type
     this.type = type
     this.content = notification.content
     this.payload = objectMapper.writeValueAsString(notification.payload)

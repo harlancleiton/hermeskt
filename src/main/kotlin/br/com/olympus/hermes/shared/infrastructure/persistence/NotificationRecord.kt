@@ -1,7 +1,11 @@
 package br.com.olympus.hermes.shared.infrastructure.persistence
 
+import io.quarkus.runtime.annotations.RegisterForReflection
+import kotlin.text.appendLine
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey
 
 /**
  * DynamoDB persistence model for notification aggregates. Uses a single-table design with a `type`
@@ -9,26 +13,66 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
  * nullable and populated based on the notification type.
  */
 @DynamoDbBean
+@RegisterForReflection
 class NotificationRecord {
-    @get:DynamoDbPartitionKey var id: String = ""
+    @get:DynamoDbPartitionKey @get:DynamoDbAttribute("PK") var pk: String = ""
 
-    var type: String = ""
-    var content: String = ""
-    var payload: String = "{}"
-    var shippingReceipt: String? = null
-    var sentAt: Long? = null
+    @get:DynamoDbSortKey @get:DynamoDbAttribute("SK") var sk: String = ""
+
+    val id
+        get() = pk
+
+    @get:DynamoDbAttribute("type") var type: String = ""
+
+    @get:DynamoDbAttribute("content") var content: String = ""
+
+    @get:DynamoDbAttribute("payload") var payload: String = "{}"
+
+    @get:DynamoDbAttribute("shippingReceipt") var shippingReceipt: String? = null
+
+    @get:DynamoDbAttribute("sentAt") var sentAt: Long? = null
     var deliveryAt: Long? = null
-    var seenAt: Long? = null
-    var createdAt: Long = 0
-    var updatedAt: Long = 0
-    var version: Int = 0
+
+    @get:DynamoDbAttribute("seenAt") var seenAt: Long? = null
+
+    @get:DynamoDbAttribute("createdAt") var createdAt: Long = 0
+
+    @get:DynamoDbAttribute("updatedAt") var updatedAt: Long = 0
+
+    @get:DynamoDbAttribute("version") var version: Int = 0
 
     // Email-specific
-    var fromEmail: String? = null
-    var toEmail: String? = null
-    var subject: String? = null
+    @get:DynamoDbAttribute("fromEmail") var fromEmail: String? = null
+
+    @get:DynamoDbAttribute("toEmail") var toEmail: String? = null
+
+    @get:DynamoDbAttribute("subject") var subject: String? = null
 
     // SMS-specific
-    var fromShortCode: Int? = null
-    var toPhone: String? = null
+    @get:DynamoDbAttribute("fromShortCode") var fromShortCode: Int? = null
+
+    @get:DynamoDbAttribute("toPhone") var toPhone: String? = null
+
+    override fun toString(): String {
+        return StringBuilder()
+                .appendLine("pk: ${pk}")
+                .appendLine("sk: ${sk}")
+                .appendLine("id: ${id}")
+                .appendLine("type: ${type}")
+                .appendLine("content: ${content}")
+                .appendLine("payload: ${payload}")
+                .appendLine("shippingReceipt: ${shippingReceipt}")
+                .appendLine("sentAt: ${sentAt}")
+                .appendLine("deliveryAt: ${deliveryAt}")
+                .appendLine("seenAt: ${seenAt}")
+                .appendLine("createdAt: ${createdAt}")
+                .appendLine("updatedAt: ${updatedAt}")
+                .appendLine("version: ${version}")
+                .appendLine("fromEmail: ${fromEmail}")
+                .appendLine("toEmail: ${toEmail}")
+                .appendLine("subject: ${subject}")
+                .appendLine("fromShortCode: ${fromShortCode}")
+                .appendLine("toPhone: ${toPhone}")
+                .toString()
+    }
 }
