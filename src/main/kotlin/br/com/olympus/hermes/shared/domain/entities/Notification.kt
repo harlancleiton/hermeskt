@@ -8,6 +8,7 @@ abstract class Notification
 protected constructor(
         val content: String,
         val payload: Map<String, Any>,
+        // TODO add interface or value object
         var shippingReceipt: Any?,
         var sentAt: Date?,
         var deliveryAt: Date?,
