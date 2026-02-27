@@ -1,5 +1,6 @@
 package br.com.olympus.hermes.shared.domain.events
 
+import br.com.olympus.hermes.shared.domain.factories.NotificationType
 import br.com.olympus.hermes.shared.domain.valueobjects.BrazilianPhone
 import br.com.olympus.hermes.shared.domain.valueobjects.Email
 import br.com.olympus.hermes.shared.domain.valueobjects.EmailSubject
@@ -49,6 +50,7 @@ data class NotificationDeliveredEvent(
 sealed interface NotificationCreatedEvent : DomainEvent {
     val content: String
     val payload: Map<String, Any>
+    val type: NotificationType
 }
 
 data class EmailNotificationCreatedEvent(
@@ -64,6 +66,7 @@ data class EmailNotificationCreatedEvent(
 ) : NotificationCreatedEvent {
     override val aggregateType = "Notification"
     override val eventType = "EmailNotificationCreatedEvent"
+    override val type = NotificationType.EMAIL
 }
 
 data class SMSNotificationCreatedEvent(
@@ -79,4 +82,5 @@ data class SMSNotificationCreatedEvent(
 ) : NotificationCreatedEvent {
     override val aggregateType = "Notification"
     override val eventType = "SMSNotificationCreatedEvent"
+    override val type = NotificationType.SMS
 }

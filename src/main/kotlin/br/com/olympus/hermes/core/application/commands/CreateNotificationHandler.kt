@@ -15,10 +15,10 @@ class CreateNotificationHandler(
         private val factoryRegistry: NotificationFactoryRegistry
 ) : CommandHandler<CreateNotificationCommand, Notification> {
 
-        override fun handle(command: CreateNotificationCommand): Either<BaseError, Notification> =
-                factoryRegistry
-                        .getFactory<Notification>(command.type)
-                        .flatMap { factory -> factory.create(command.toInput()) }
-                        .flatMap { notificationRepository.save(it) }
-                        .onRight { it.commit() }
+    override fun handle(command: CreateNotificationCommand): Either<BaseError, Notification> =
+            factoryRegistry
+                    .getFactory<Notification>(command.type)
+                    .flatMap { factory -> factory.create(command.toInput()) }
+                    .flatMap { notificationRepository.save(it) }
+                    .onRight { it.commit() }
 }
