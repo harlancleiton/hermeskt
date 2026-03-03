@@ -22,9 +22,9 @@ interface EventStore {
      * @return Either a [BaseError] on conflict/failure, or [Unit] on success.
      */
     fun append(
-            aggregateId: EntityId,
-            events: List<DomainEvent>,
-            expectedVersion: Int,
+        aggregateId: EntityId,
+        events: List<DomainEvent>,
+        expectedVersion: Int,
     ): Either<BaseError, Unit>
 
     /**

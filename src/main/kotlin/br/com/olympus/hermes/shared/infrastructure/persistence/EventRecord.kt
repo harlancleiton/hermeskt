@@ -18,9 +18,13 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 @DynamoDbBean
 @RegisterForReflection
 class EventRecord {
-    @get:DynamoDbPartitionKey @get:DynamoDbAttribute("PK") var pk: String = ""
+    @get:DynamoDbPartitionKey
+    @get:DynamoDbAttribute("PK")
+    var pk: String = ""
 
-    @get:DynamoDbSortKey @get:DynamoDbAttribute("SK") var sk: String = ""
+    @get:DynamoDbSortKey
+    @get:DynamoDbAttribute("SK")
+    var sk: String = ""
 
     /** Unique event identifier. */
     var eventId: String = ""
@@ -45,7 +49,7 @@ class EventRecord {
 
         /** Formats a version integer into a zero-padded sort key string. */
         fun sortKey(event: DomainEvent): String =
-                "${event.aggregateId.value}#${event.aggregateType}#${event.aggregateVersion}"
+            "${event.aggregateId.value}#${event.aggregateType}#${event.aggregateVersion}"
 
         /** Parses a sort key string back into a version integer. */
         fun versionFromSortKey(sk: String): Int = sk.trimStart('0').ifEmpty { "0" }.toInt()

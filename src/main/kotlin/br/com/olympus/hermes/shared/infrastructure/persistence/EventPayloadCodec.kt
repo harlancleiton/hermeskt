@@ -47,11 +47,11 @@ interface EventPayloadCodec<E : DomainEvent> {
      * @return Either a [BaseError] if reconstruction fails, or the restored event.
      */
     fun deserialize(
-            eventId: EntityId,
-            aggregateId: EntityId,
-            version: Int,
-            occurredAt: Date,
-            data: Map<String, Any>,
+        eventId: EntityId,
+        aggregateId: EntityId,
+        version: Int,
+        occurredAt: Date,
+        data: Map<String, Any>,
     ): Either<BaseError, E>
 }
 
@@ -82,7 +82,7 @@ class EventPayloadCodecRegistry {
      */
     @Suppress("UNCHECKED_CAST")
     fun <E : DomainEvent> codecFor(eventType: String): EventPayloadCodec<E>? =
-            codecs[eventType] as? EventPayloadCodec<E>
+        codecs[eventType] as? EventPayloadCodec<E>
 
     /**
      * Serializes [event] using the codec registered for [event]'s [DomainEvent.eventType] and then
@@ -94,16 +94,15 @@ class EventPayloadCodecRegistry {
      * JSON string of the event-specific payload.
      */
     fun serialize(
-            event: DomainEvent,
-            objectMapper: ObjectMapper,
+        event: DomainEvent,
+        objectMapper: ObjectMapper,
     ): Either<BaseError, String> {
         @Suppress("UNCHECKED_CAST")
         val codec =
-                codecs[event.eventType] as? EventPayloadCodec<DomainEvent>
-                        ?: return PersistenceError(
-                                        "No codec registered for event type: ${event.eventType}"
-                                )
-                                .left()
+            codecs[event.eventType] as? EventPayloadCodec<DomainEvent>
+                ?: return PersistenceError(
+                    "No codec registered for event type: ${event.eventType}",
+                ).left()
         return Either.catch { objectMapper.writeValueAsString(codec.serialize(event)) }.mapLeft {
             PersistenceError("Failed to serialize event: ${event.eventType}", it)
         }

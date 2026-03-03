@@ -23,8 +23,8 @@ private val MAP_TYPE_REF = object : TypeReference<Map<String, Any>>() {}
  * @param registry Registry of [EventPayloadCodec] implementations keyed by event type.
  */
 class DomainEventSerde(
-        private val objectMapper: ObjectMapper,
-        private val registry: EventPayloadCodecRegistry = defaultEventPayloadCodecRegistry(),
+    private val objectMapper: ObjectMapper,
+    private val registry: EventPayloadCodecRegistry = defaultEventPayloadCodecRegistry(),
 ) {
     /**
      * Serializes the event-specific payload (excluding common envelope fields) into a JSON string.
@@ -33,8 +33,7 @@ class DomainEventSerde(
      * @return Either a [PersistenceError] if no codec is registered or serialization fails, or the
      * JSON string of the event-specific payload.
      */
-    fun serialize(event: DomainEvent): Either<BaseError, String> =
-            registry.serialize(event, objectMapper)
+    fun serialize(event: DomainEvent): Either<BaseError, String> = registry.serialize(event, objectMapper)
 
     /**
      * Reconstructs a [DomainEvent] from its persisted envelope fields and JSON data payload.
@@ -49,16 +48,16 @@ class DomainEventSerde(
      * event.
      */
     fun deserialize(
-            eventType: String,
-            eventId: EntityId,
-            aggregateId: EntityId,
-            version: Int,
-            occurredAt: Date,
-            json: String,
+        eventType: String,
+        eventId: EntityId,
+        aggregateId: EntityId,
+        version: Int,
+        occurredAt: Date,
+        json: String,
     ): Either<BaseError, DomainEvent> {
         val codec =
-                registry.codecFor<DomainEvent>(eventType)
-                        ?: return PersistenceError("Unknown event type: $eventType").left()
+            registry.codecFor<DomainEvent>(eventType)
+                ?: return PersistenceError("Unknown event type: $eventType").left()
         val data: Map<String, Any> = objectMapper.readValue(json, MAP_TYPE_REF)
         return codec.deserialize(eventId, aggregateId, version, occurredAt, data)
     }
