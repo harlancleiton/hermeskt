@@ -48,6 +48,14 @@ class DomainEventSerde(private val objectMapper: ObjectMapper) {
                                     "from" to event.from.toInt(),
                                     "to" to event.to.value,
                             )
+                    is WhatsAppNotificationCreatedEvent ->
+                            mapOf(
+                                    "content" to event.content,
+                                    "payload" to event.payload,
+                                    "from" to event.from.value,
+                                    "to" to event.to.value,
+                                    "templateName" to event.templateName,
+                            )
                     is NotificationSentEvent -> mapOf("shippingReceipt" to event.shippingReceipt)
                     is NotificationSeenEvent -> emptyMap()
                     is NotificationDeliveredEvent -> emptyMap()
@@ -85,6 +93,8 @@ class DomainEventSerde(private val objectMapper: ObjectMapper) {
                     deserializeEmailCreated(eventId, aggregateId, version, occurredAt, data)
             "SMSNotificationCreatedEvent" ->
                     deserializeSmsCreated(eventId, aggregateId, version, occurredAt, data)
+            "WhatsAppNotificationCreatedEvent" ->
+                    deserializeWhatsAppCreated(eventId, aggregateId, version, occurredAt, data)
             "NotificationSentEvent" ->
                     deserializeNotificationSent(eventId, aggregateId, version, occurredAt, data)
             "NotificationSeenEvent" ->
@@ -141,6 +151,30 @@ class DomainEventSerde(private val objectMapper: ObjectMapper) {
                 payload = (data["payload"] as? Map<String, Any>) ?: emptyMap(),
                 from = (data["from"] as Number).toInt().toUInt(),
                 to = to,
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun deserializeWhatsAppCreated(
+            eventId: EntityId,
+            aggregateId: EntityId,
+            version: Int,
+            occurredAt: Date,
+            data: Map<String, Any>
+    ): Either<BaseError, WhatsAppNotificationCreatedEvent> = either {
+        val from = BrazilianPhone.create(data["from"] as String).bind()
+        val to = BrazilianPhone.create(data["to"] as String).bind()
+        val templateName = data["templateName"] as String
+        WhatsAppNotificationCreatedEvent(
+                id = eventId,
+                aggregateId = aggregateId,
+                aggregateVersion = version,
+                occurredAt = occurredAt,
+                content = data["content"] as String,
+                payload = (data["payload"] as? Map<String, Any>) ?: emptyMap(),
+                from = from,
+                to = to,
+                templateName = templateName,
         )
     }
 

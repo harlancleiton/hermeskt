@@ -53,6 +53,13 @@ class NotificationRecord {
 
     @get:DynamoDbAttribute("toPhone") var toPhone: String? = null
 
+    // WhatsApp-specific
+    @get:DynamoDbAttribute("fromWhatsApp") var fromWhatsApp: String? = null
+
+    @get:DynamoDbAttribute("toWhatsApp") var toWhatsApp: String? = null
+
+    @get:DynamoDbAttribute("templateName") var templateName: String? = null
+
     override fun toString(): String {
         return StringBuilder()
                 .appendLine("pk: ${pk}")
@@ -73,6 +80,9 @@ class NotificationRecord {
                 .appendLine("subject: ${subject}")
                 .appendLine("fromShortCode: ${fromShortCode}")
                 .appendLine("toPhone: ${toPhone}")
+                .appendLine("fromWhatsApp: ${fromWhatsApp}")
+                .appendLine("toWhatsApp: ${toWhatsApp}")
+                .appendLine("templateName: ${templateName}")
                 .toString()
     }
 }

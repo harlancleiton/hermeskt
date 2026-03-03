@@ -48,6 +48,27 @@ sealed interface CreateNotificationCommand : Command {
                 val to: String
         ) : CreateNotificationCommand
 
+        /**
+         * Command for creating a WhatsApp notification.
+         *
+         * @property content The message body content.
+         * @property payload Additional metadata for template parameter rendering.
+         * @property from The sender's Brazilian phone number (raw string, validated in the
+         * handler).
+         * @property to The recipient's Brazilian phone number (raw string, validated in the
+         * handler).
+         * @property templateName The WhatsApp Business API template name (raw string, validated in
+         * the handler).
+         */
+        data class WhatsApp(
+                override val type: NotificationType = NotificationType.WHATSAPP,
+                override val content: String,
+                override val payload: Map<String, Any> = emptyMap(),
+                val from: String,
+                val to: String,
+                val templateName: String
+        ) : CreateNotificationCommand
+
         fun toInput(): CreateNotificationInput =
                 when (this) {
                         is CreateNotificationCommand.Email ->
@@ -64,6 +85,14 @@ sealed interface CreateNotificationCommand : Command {
                                         payload = payload,
                                         from = from,
                                         to = to
+                                )
+                        is CreateNotificationCommand.WhatsApp ->
+                                CreateNotificationInput.WhatsApp(
+                                        content = content,
+                                        payload = payload,
+                                        from = from,
+                                        to = to,
+                                        templateName = templateName
                                 )
                 }
 }

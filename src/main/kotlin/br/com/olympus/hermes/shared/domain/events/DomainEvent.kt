@@ -84,3 +84,19 @@ data class SMSNotificationCreatedEvent(
     override val eventType = "SMSNotificationCreatedEvent"
     override val type = NotificationType.SMS
 }
+
+data class WhatsAppNotificationCreatedEvent(
+        override val id: EntityId,
+        override val aggregateId: EntityId,
+        override val aggregateVersion: Int,
+        override val occurredAt: Date,
+        override val content: String,
+        override val payload: Map<String, Any>,
+        val from: BrazilianPhone,
+        val to: BrazilianPhone,
+        val templateName: String,
+) : NotificationCreatedEvent {
+    override val aggregateType = "Notification"
+    override val eventType = "WhatsAppNotificationCreatedEvent"
+    override val type = NotificationType.WHATSAPP
+}
