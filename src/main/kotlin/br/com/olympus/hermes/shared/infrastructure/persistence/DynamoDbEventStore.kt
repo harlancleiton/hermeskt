@@ -84,7 +84,7 @@ class DynamoDbEventStore
         override fun getEvents(aggregateId: EntityId): Either<BaseError, List<DomainEvent>> {
             val condition =
                 QueryConditional.keyEqualTo(
-                    Key.builder().sortValue("${aggregateId.value}#").build(),
+                    Key.builder().partitionValue(aggregateId.value.toString()).build(),
                 )
             return queryAndDeserialize(condition)
         }
@@ -106,8 +106,8 @@ class DynamoDbEventStore
         ): Either<BaseError, EventRecord> =
             either {
                 val record = EventRecord()
-                record.pk = event.id.value.toString()
-                record.sk = EventRecord.sortKey(event)
+                record.pk = event.aggregateId.value.toString()
+                record.sk = EventRecord.sortKey(version)
                 record.eventId = event.id.value.toString()
                 record.eventType = event.eventType
                 record.aggregateType = event.aggregateType
