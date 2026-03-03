@@ -2,11 +2,13 @@ package br.com.olympus.hermes.shared.domain.entities
 
 import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
-import java.util.*
+import java.util.Date
 
-abstract class AggregateRoot protected constructor(id: EntityId, createdAt: Date, updatedAt: Date) :
-        BaseEntity(id, createdAt, updatedAt) {
-
+abstract class AggregateRoot protected constructor(
+    id: EntityId,
+    createdAt: Date,
+    updatedAt: Date,
+) : BaseEntity(id, createdAt, updatedAt) {
     var version = 0
 
     protected var changes = mutableListOf<DomainEvent>()

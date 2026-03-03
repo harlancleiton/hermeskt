@@ -5,13 +5,13 @@ import br.com.olympus.hermes.shared.domain.events.WhatsAppNotificationCreatedEve
 import br.com.olympus.hermes.shared.domain.valueobjects.BrazilianPhone
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.util.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.Date
 
 class DomainEventSerdeWhatsAppTest {
-
     private lateinit var serde: DomainEventSerde
 
     private val from = BrazilianPhone.create("11987654321").getOrNull()!!
@@ -28,28 +28,28 @@ class DomainEventSerdeWhatsAppTest {
         val aggregateId = EntityId.generate()
         val now = Date()
         val original =
-                WhatsAppNotificationCreatedEvent(
-                        id = eventId,
-                        aggregateId = aggregateId,
-                        aggregateVersion = 0,
-                        occurredAt = now,
-                        content = "Hello, world!",
-                        payload = mapOf("key" to "value"),
-                        from = from,
-                        to = to,
-                        templateName = "hello_world"
-                )
+            WhatsAppNotificationCreatedEvent(
+                id = eventId,
+                aggregateId = aggregateId,
+                aggregateVersion = 0,
+                occurredAt = now,
+                content = "Hello, world!",
+                payload = mapOf("key" to "value"),
+                from = from,
+                to = to,
+                templateName = "hello_world",
+            )
 
         val json = serde.serialize(original)
         val result =
-                serde.deserialize(
-                        eventType = "WhatsAppNotificationCreatedEvent",
-                        eventId = eventId,
-                        aggregateId = aggregateId,
-                        version = 0,
-                        occurredAt = now,
-                        json = json
-                )
+            serde.deserialize(
+                eventType = "WhatsAppNotificationCreatedEvent",
+                eventId = eventId,
+                aggregateId = aggregateId,
+                version = 0,
+                occurredAt = now,
+                json = json,
+            )
 
         assertTrue(result.isRight())
         val deserialized = (result as Either.Right).value
@@ -64,17 +64,17 @@ class DomainEventSerdeWhatsAppTest {
     @Test
     fun `deserialize_withInvalidPhone_returnsLeft`() {
         val json =
-                """{"content":"Hello","payload":{},"from":"invalid-phone","to":"11912345678","templateName":"hello_world"}"""
+            """{"content":"Hello","payload":{},"from":"invalid-phone","to":"11912345678","templateName":"hello_world"}"""
 
         val result =
-                serde.deserialize(
-                        eventType = "WhatsAppNotificationCreatedEvent",
-                        eventId = EntityId.generate(),
-                        aggregateId = EntityId.generate(),
-                        version = 0,
-                        occurredAt = Date(),
-                        json = json
-                )
+            serde.deserialize(
+                eventType = "WhatsAppNotificationCreatedEvent",
+                eventId = EntityId.generate(),
+                aggregateId = EntityId.generate(),
+                version = 0,
+                occurredAt = Date(),
+                json = json,
+            )
 
         assertTrue(result.isLeft())
     }

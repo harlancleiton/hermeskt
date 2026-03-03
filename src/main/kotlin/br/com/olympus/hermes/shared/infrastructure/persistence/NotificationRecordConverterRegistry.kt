@@ -16,7 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped
 @ApplicationScoped
 class NotificationRecordConverterRegistry {
     private val converters =
-            listOf(EmailNotificationRecordConverter(), SmsNotificationRecordConverter())
+        listOf(EmailNotificationRecordConverter(), SmsNotificationRecordConverter())
 
     private val byType = converters.associateBy { it.type }
 
@@ -29,8 +29,8 @@ class NotificationRecordConverterRegistry {
      * @return Either a [PersistenceError] if no converter is registered, or the converter.
      */
     fun forType(type: String): Either<BaseError, NotificationRecordConverter<*>> =
-            byType[type]?.right()
-                    ?: PersistenceError("No converter registered for type: $type").left()
+        byType[type]?.right()
+            ?: PersistenceError("No converter registered for type: $type").left()
 
     /**
      * Retrieves the converter that handles the given notification entity's runtime class.
@@ -40,12 +40,9 @@ class NotificationRecordConverterRegistry {
      * converter.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Notification> forEntity(
-            notification: T
-    ): Either<BaseError, NotificationRecordConverter<T>> =
-            (byClass[notification::class] as? NotificationRecordConverter<T>)?.right()
-                    ?: PersistenceError(
-                                    "No converter registered for class: ${notification::class.simpleName}"
-                            )
-                            .left()
+    fun <T : Notification> forEntity(notification: T): Either<BaseError, NotificationRecordConverter<T>> =
+        (byClass[notification::class] as? NotificationRecordConverter<T>)?.right()
+            ?: PersistenceError(
+                "No converter registered for class: ${notification::class.simpleName}",
+            ).left()
 }

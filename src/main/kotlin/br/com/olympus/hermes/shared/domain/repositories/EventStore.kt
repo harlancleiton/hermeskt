@@ -22,9 +22,9 @@ interface EventStore {
      * @return Either a [BaseError] on conflict/failure, or [Unit] on success.
      */
     fun append(
-            aggregateId: EntityId,
-            events: List<DomainEvent>,
-            expectedVersion: Int
+        aggregateId: EntityId,
+        events: List<DomainEvent>,
+        expectedVersion: Int,
     ): Either<BaseError, Unit>
 
     /**
@@ -44,5 +44,8 @@ interface EventStore {
      * @param afterVersion Only events with version strictly greater than this value are returned.
      * @return Either a [BaseError] on failure, or the ordered list of events.
      */
-    fun getEvents(aggregateId: EntityId, afterVersion: Int): Either<BaseError, List<DomainEvent>>
+    fun getEvents(
+        aggregateId: EntityId,
+        afterVersion: Int,
+    ): Either<BaseError, List<DomainEvent>>
 }

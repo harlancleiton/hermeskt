@@ -3,12 +3,12 @@ package br.com.olympus.hermes.shared.domain.factories
 import arrow.core.Either
 import br.com.olympus.hermes.shared.domain.entities.WhatsAppNotification
 import br.com.olympus.hermes.shared.domain.valueobjects.BrazilianPhone
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class NotificationFactoryRegistryWhatsAppTest {
-
     private lateinit var registry: NotificationFactoryRegistry
 
     @BeforeEach
@@ -33,12 +33,12 @@ class NotificationFactoryRegistryWhatsAppTest {
         val factory = (result as Either.Right).value
 
         val input =
-                CreateNotificationInput.WhatsApp(
-                        content = "Hello, world!",
-                        from = "11987654321",
-                        to = "11912345678",
-                        templateName = "hello_world"
-                )
+            CreateNotificationInput.WhatsApp(
+                content = "Hello, world!",
+                from = "11987654321",
+                to = "11912345678",
+                templateName = "hello_world",
+            )
 
         val notification = factory.create(input)
 

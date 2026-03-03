@@ -33,16 +33,15 @@ class NotificationFactoryRegistry {
      * @return Either FactoryAlreadyRegisteredError if already registered, or Unit on success.
      */
     fun <T : Notification> register(
-            type: NotificationType,
-            factory: NotificationFactory<T>
-    ): Either<BaseError, Unit> {
-        return if (factories.containsKey(type)) {
+        type: NotificationType,
+        factory: NotificationFactory<T>,
+    ): Either<BaseError, Unit> =
+        if (factories.containsKey(type)) {
             FactoryAlreadyRegisteredError(type).left()
         } else {
             factories[type] = factory
             Unit.right()
         }
-    }
 
     /**
      * Registers a factory for a specific notification type, replacing any existing factory. Always
@@ -52,8 +51,8 @@ class NotificationFactoryRegistry {
      * @param factory The factory instance to register.
      */
     fun <T : Notification> registerOrReplace(
-            type: NotificationType,
-            factory: NotificationFactory<T>
+        type: NotificationType,
+        factory: NotificationFactory<T>,
     ) {
         factories[type] = factory
     }
@@ -64,9 +63,7 @@ class NotificationFactoryRegistry {
      * @param type The notification type.
      * @return true if a factory was removed, false if no factory was registered for the type.
      */
-    fun unregister(type: NotificationType): Boolean {
-        return factories.remove(type) != null
-    }
+    fun unregister(type: NotificationType): Boolean = factories.remove(type) != null
 
     /**
      * Retrieves a factory for a specific notification type. Returns an error if no factory is
@@ -76,9 +73,7 @@ class NotificationFactoryRegistry {
      * @return Either FactoryNotFoundError if not found, or the factory instance.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Notification> getFactory(
-            type: NotificationType
-    ): Either<BaseError, NotificationFactory<T>> {
+    fun <T : Notification> getFactory(type: NotificationType): Either<BaseError, NotificationFactory<T>> {
         val factory = factories[type] as? NotificationFactory<T>
         return factory?.right() ?: FactoryNotFoundError(type).left()
     }
@@ -89,18 +84,14 @@ class NotificationFactoryRegistry {
      * @param type The notification type.
      * @return true if a factory is registered, false otherwise.
      */
-    fun hasFactory(type: NotificationType): Boolean {
-        return factories.containsKey(type)
-    }
+    fun hasFactory(type: NotificationType): Boolean = factories.containsKey(type)
 
     /**
      * Returns the set of all registered notification types.
      *
      * @return Set of notification types that have registered factories.
      */
-    fun getSupportedTypes(): Set<NotificationType> {
-        return factories.keys.toSet()
-    }
+    fun getSupportedTypes(): Set<NotificationType> = factories.keys.toSet()
 
     /**
      * Clears all registered factories. Use with caution - primarily intended for testing purposes.

@@ -28,7 +28,11 @@ interface NotificationRecordConverter<T : Notification> {
      * @param record The record to populate (pre-allocated by the caller).
      * @param objectMapper Jackson mapper for serializing complex fields.
      */
-    fun populateRecord(notification: T, record: NotificationRecord, objectMapper: ObjectMapper)
+    fun populateRecord(
+        notification: T,
+        record: NotificationRecord,
+        objectMapper: ObjectMapper,
+    )
 
     /**
      * Reconstructs a domain entity from a [NotificationRecord]. Validates required fields and
@@ -38,5 +42,8 @@ interface NotificationRecordConverter<T : Notification> {
      * @param objectMapper Jackson mapper for deserializing complex fields.
      * @return Either a [BaseError] or the reconstructed domain entity.
      */
-    fun fromRecord(record: NotificationRecord, objectMapper: ObjectMapper): Either<BaseError, T>
+    fun fromRecord(
+        record: NotificationRecord,
+        objectMapper: ObjectMapper,
+    ): Either<BaseError, T>
 }

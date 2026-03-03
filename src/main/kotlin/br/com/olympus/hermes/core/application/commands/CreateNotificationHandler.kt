@@ -10,15 +10,14 @@ import br.com.olympus.hermes.shared.domain.factories.NotificationFactoryRegistry
 import br.com.olympus.hermes.shared.domain.repositories.NotificationRepository
 
 class CreateNotificationHandler(
-        private val notificationRepository: NotificationRepository,
-        private val eventPublisher: DomainEventPublisher,
-        private val factoryRegistry: NotificationFactoryRegistry
+    private val notificationRepository: NotificationRepository,
+    private val eventPublisher: DomainEventPublisher,
+    private val factoryRegistry: NotificationFactoryRegistry,
 ) : CommandHandler<CreateNotificationCommand, Notification> {
-
     override fun handle(command: CreateNotificationCommand): Either<BaseError, Notification> =
-            factoryRegistry
-                    .getFactory<Notification>(command.type)
-                    .flatMap { factory -> factory.create(command.toInput()) }
-                    .flatMap { notificationRepository.save(it) }
-                    .onRight { it.commit() }
+        factoryRegistry
+            .getFactory<Notification>(command.type)
+            .flatMap { factory -> factory.create(command.toInput()) }
+            .flatMap { notificationRepository.save(it) }
+            .onRight { it.commit() }
 }

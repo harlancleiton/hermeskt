@@ -20,35 +20,33 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient
  */
 @ApplicationScoped
 class DynamoDbConfig {
-        @ConfigProperty(name = "dynamodb.table-name") private lateinit var tableName: String
+    @ConfigProperty(name = "dynamodb.table-name")
+    private lateinit var tableName: String
 
-        @ConfigProperty(name = "dynamodb.event-store-table-name")
-        private lateinit var eventStoreTableName: String
+    @ConfigProperty(name = "dynamodb.event-store-table-name")
+    private lateinit var eventStoreTableName: String
 
-        @Produces
-        @Singleton
-        @NotificationTable
-        fun notificationTable(
-                enhancedClient: DynamoDbEnhancedClient
-        ): DynamoDbTable<NotificationRecord> =
-                enhancedClient.table(
-                        tableName,
-                        TableSchema.fromBean(NotificationRecord::class.java),
-                )
+    @Produces
+    @Singleton
+    @NotificationTable
+    fun notificationTable(enhancedClient: DynamoDbEnhancedClient): DynamoDbTable<NotificationRecord> =
+        enhancedClient.table(
+            tableName,
+            TableSchema.fromBean(NotificationRecord::class.java),
+        )
 
-        @Produces
-        @Singleton
-        @EventStoreTable
-        fun eventStoreTable(enhancedClient: DynamoDbEnhancedClient): DynamoDbTable<EventRecord> =
-                enhancedClient.table(
-                        eventStoreTableName,
-                        TableSchema.fromBean(EventRecord::class.java),
-                )
+    @Produces
+    @Singleton
+    @EventStoreTable
+    fun eventStoreTable(enhancedClient: DynamoDbEnhancedClient): DynamoDbTable<EventRecord> =
+        enhancedClient.table(
+            eventStoreTableName,
+            TableSchema.fromBean(EventRecord::class.java),
+        )
 
-        @Produces
-        @Singleton
-        fun domainEventSerde(objectMapper: ObjectMapper): DomainEventSerde =
-                DomainEventSerde(objectMapper)
+    @Produces
+    @Singleton
+    fun domainEventSerde(objectMapper: ObjectMapper): DomainEventSerde = DomainEventSerde(objectMapper)
 }
 
 @Qualifier

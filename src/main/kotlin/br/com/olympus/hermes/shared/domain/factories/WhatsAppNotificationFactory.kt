@@ -18,7 +18,7 @@ import br.com.olympus.hermes.shared.domain.exceptions.MissingCreationEventError
 import br.com.olympus.hermes.shared.domain.exceptions.ValidationErrors
 import br.com.olympus.hermes.shared.domain.valueobjects.BrazilianPhone
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
-import java.util.*
+import java.util.Date
 
 /**
  * Stateless factory for creating and reconstituting [WhatsAppNotification] entities. Validates all
@@ -26,7 +26,6 @@ import java.util.*
  * on the first error.
  */
 class WhatsAppNotificationFactory : NotificationFactory<WhatsAppNotification> {
-
     /**
      * Creates a new [WhatsAppNotification] from raw input data. Validates content, phone number
      * fields, and template name simultaneously, accumulating all validation errors.
@@ -35,51 +34,47 @@ class WhatsAppNotificationFactory : NotificationFactory<WhatsAppNotification> {
      * @return Either a [ValidationErrors] of accumulated [BaseError]s, or the created
      * [WhatsAppNotification].
      */
-    override fun create(
-            input: CreateNotificationInput
-    ): Either<ValidationErrors, WhatsAppNotification> {
+    override fun create(input: CreateNotificationInput): Either<ValidationErrors, WhatsAppNotification> {
         if (input !is CreateNotificationInput.WhatsApp) {
             return ValidationErrors(
-                            listOf(
-                                    InvalidNotificationInputError(
-                                            expected = "WhatsApp",
-                                            actual = input::class.simpleName ?: "Unknown"
-                                    )
-                            )
-                    )
-                    .left()
+                listOf(
+                    InvalidNotificationInputError(
+                        expected = "WhatsApp",
+                        actual = input::class.simpleName ?: "Unknown",
+                    ),
+                ),
+            ).left()
         }
 
         return either<NonEmptyList<BaseError>, WhatsAppNotification> {
             zipOrAccumulate(
-                    { ensure(input.content.isNotBlank()) { EmptyContentError("content") } },
-                    { BrazilianPhone.create(input.from).bind() },
-                    { BrazilianPhone.create(input.to).bind() },
-                    {
-                        ensure(input.templateName.isNotBlank()) {
-                            EmptyContentError("templateName")
-                        }
+                { ensure(input.content.isNotBlank()) { EmptyContentError("content") } },
+                { BrazilianPhone.create(input.from).bind() },
+                { BrazilianPhone.create(input.to).bind() },
+                {
+                    ensure(input.templateName.isNotBlank()) {
+                        EmptyContentError("templateName")
                     }
+                },
             ) { _, from, to, _ ->
                 val now = Date()
                 WhatsAppNotification(
-                        content = input.content,
-                        payload = input.payload,
-                        shippingReceipt = null,
-                        sentAt = null,
-                        deliveryAt = null,
-                        seenAt = null,
-                        id = EntityId.generate(),
-                        createdAt = now,
-                        updatedAt = now,
-                        from = from,
-                        to = to,
-                        templateName = input.templateName,
-                        isNew = true
+                    content = input.content,
+                    payload = input.payload,
+                    shippingReceipt = null,
+                    sentAt = null,
+                    deliveryAt = null,
+                    seenAt = null,
+                    id = EntityId.generate(),
+                    createdAt = now,
+                    updatedAt = now,
+                    from = from,
+                    to = to,
+                    templateName = input.templateName,
+                    isNew = true,
                 )
             }
-        }
-                .mapLeft { ValidationErrors(it) }
+        }.mapLeft { ValidationErrors(it) }
     }
 
     /**
@@ -96,26 +91,26 @@ class WhatsAppNotificationFactory : NotificationFactory<WhatsAppNotification> {
         }
 
         val creationEvent =
-                events.filterIsInstance<WhatsAppNotificationCreatedEvent>().firstOrNull()
-                        ?: return MissingCreationEventError("WhatsAppNotificationCreatedEvent")
-                                .left()
+            events.filterIsInstance<WhatsAppNotificationCreatedEvent>().firstOrNull()
+                ?: return MissingCreationEventError("WhatsAppNotificationCreatedEvent")
+                    .left()
 
         val notification =
-                WhatsAppNotification(
-                        content = creationEvent.content,
-                        payload = creationEvent.payload,
-                        shippingReceipt = null,
-                        sentAt = null,
-                        deliveryAt = null,
-                        seenAt = null,
-                        id = creationEvent.aggregateId,
-                        createdAt = creationEvent.occurredAt,
-                        updatedAt = creationEvent.occurredAt,
-                        from = creationEvent.from,
-                        to = creationEvent.to,
-                        templateName = creationEvent.templateName,
-                        isNew = false
-                )
+            WhatsAppNotification(
+                content = creationEvent.content,
+                payload = creationEvent.payload,
+                shippingReceipt = null,
+                sentAt = null,
+                deliveryAt = null,
+                seenAt = null,
+                id = creationEvent.aggregateId,
+                createdAt = creationEvent.occurredAt,
+                updatedAt = creationEvent.occurredAt,
+                from = creationEvent.from,
+                to = creationEvent.to,
+                templateName = creationEvent.templateName,
+                isNew = false,
+            )
 
         notification.loadFromHistory(events)
 

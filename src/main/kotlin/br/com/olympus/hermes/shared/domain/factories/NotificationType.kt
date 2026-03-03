@@ -15,5 +15,5 @@ enum class NotificationType {
     PUSH,
 
     /** WhatsApp notification channel */
-    WHATSAPP
+    WHATSAPP,
 }

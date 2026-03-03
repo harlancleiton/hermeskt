@@ -49,7 +49,9 @@ interface ServerError : BaseError {
  *
  * @property errors The list of individual validation errors.
  */
-data class ValidationErrors(val errors: List<BaseError>) : ClientError {
+data class ValidationErrors(
+    val errors: List<BaseError>,
+) : ClientError {
     override val message: String = "Validation failed: ${errors.joinToString("; ") { it.message }}"
 }
 
@@ -59,32 +61,44 @@ data class ValidationErrors(val errors: List<BaseError>) : ClientError {
  * @property expected The expected input type name.
  * @property actual The actual input type name received.
  */
-data class InvalidNotificationInputError(val expected: String, val actual: String) : ClientError {
+data class InvalidNotificationInputError(
+    val expected: String,
+    val actual: String,
+) : ClientError {
     override val message: String =
-            "Invalid notification input: expected '$expected', got '$actual'."
+        "Invalid notification input: expected '$expected', got '$actual'."
 }
 
 // ========================================
 // Value Object Errors
 // ========================================
 
-data class InvalidEmailError(val value: String) : ClientError {
+data class InvalidEmailError(
+    val value: String,
+) : ClientError {
     override val message = "The provided value '$value' is not a valid email."
 
     override val cause: Throwable?
         get() = null
 }
 
-data class InvalidEmailSubjectError(override val message: String) : ClientError {
+data class InvalidEmailSubjectError(
+    override val message: String,
+) : ClientError {
     override val cause: Throwable?
         get() = null
 }
 
-data class InvalidUUIDError(val value: String, override val cause: Throwable?) : ServerError {
+data class InvalidUUIDError(
+    val value: String,
+    override val cause: Throwable?,
+) : ServerError {
     override val message = "The provided value '$value' is not a valid UUID."
 }
 
-data class InvalidPhoneError(val value: String) : ClientError {
+data class InvalidPhoneError(
+    val value: String,
+) : ClientError {
     override val message = "The provided value '$value' is not a valid phone number."
 
     override val cause: Throwable?
@@ -96,7 +110,9 @@ data class InvalidPhoneError(val value: String) : ClientError {
  *
  * @property field The name of the field that contains empty content.
  */
-data class EmptyContentError(val field: String) : ClientError {
+data class EmptyContentError(
+    val field: String,
+) : ClientError {
     override val message: String = "The field '$field' cannot be empty."
 }
 
@@ -105,7 +121,9 @@ data class EmptyContentError(val field: String) : ClientError {
  *
  * @property reason The reason why the payload is invalid.
  */
-data class InvalidPayloadError(val reason: String) : ClientError {
+data class InvalidPayloadError(
+    val reason: String,
+) : ClientError {
     override val message: String = "Invalid payload: $reason"
 }
 
@@ -114,7 +132,9 @@ data class InvalidPayloadError(val reason: String) : ClientError {
  *
  * @property type The notification type that was requested.
  */
-data class FactoryNotFoundError(val type: NotificationType) : ClientError {
+data class FactoryNotFoundError(
+    val type: NotificationType,
+) : ClientError {
     override val message: String = "No factory registered for notification type: $type"
 }
 
@@ -123,7 +143,9 @@ data class FactoryNotFoundError(val type: NotificationType) : ClientError {
  *
  * @property type The notification type that is already registered.
  */
-data class FactoryAlreadyRegisteredError(val type: NotificationType) : ClientError {
+data class FactoryAlreadyRegisteredError(
+    val type: NotificationType,
+) : ClientError {
     override val message: String = "Factory for type $type is already registered."
 }
 
@@ -132,7 +154,9 @@ data class FactoryAlreadyRegisteredError(val type: NotificationType) : ClientErr
  *
  * @property reason The reason why the event history is invalid.
  */
-data class InvalidEventHistoryError(val reason: String) : ServerError {
+data class InvalidEventHistoryError(
+    val reason: String,
+) : ServerError {
     override val message: String = "Cannot reconstitute entity: $reason"
     override val cause: Throwable? = null
 }
@@ -142,7 +166,9 @@ data class InvalidEventHistoryError(val reason: String) : ServerError {
  *
  * @property expectedEventType The type of event that was expected.
  */
-data class MissingCreationEventError(val expectedEventType: String) : ServerError {
+data class MissingCreationEventError(
+    val expectedEventType: String,
+) : ServerError {
     override val message: String = "Event history must contain $expectedEventType"
     override val cause: Throwable? = null
 }
@@ -156,8 +182,10 @@ data class MissingCreationEventError(val expectedEventType: String) : ServerErro
  *
  * @property reason A description of the persistence failure.
  */
-data class PersistenceError(val reason: String, override val cause: Throwable? = null) :
-        ServerError {
+data class PersistenceError(
+    val reason: String,
+    override val cause: Throwable? = null,
+) : ServerError {
     override val message: String = "Failed to persist notification: $reason"
 }
 
@@ -166,7 +194,9 @@ data class PersistenceError(val reason: String, override val cause: Throwable? =
  *
  * @property reason A description of the publishing failure.
  */
-data class EventPublishingError(val reason: String, override val cause: Throwable? = null) :
-        ServerError {
+data class EventPublishingError(
+    val reason: String,
+    override val cause: Throwable? = null,
+) : ServerError {
     override val message: String = "Failed to publish domain event: $reason"
 }

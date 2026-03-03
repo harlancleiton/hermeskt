@@ -3,12 +3,12 @@ package br.com.olympus.hermes.shared.domain.entities
 import br.com.olympus.hermes.shared.domain.events.WhatsAppNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.valueobjects.BrazilianPhone
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
-import java.util.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.util.Date
 
 class WhatsAppNotificationTest {
-
     private val validFrom = BrazilianPhone.create("11987654321").getOrNull()!!
     private val validTo = BrazilianPhone.create("11912345678").getOrNull()!!
     private val validContent = "Hello, this is a test message"
@@ -17,19 +17,19 @@ class WhatsAppNotificationTest {
     private fun buildNotification(isNew: Boolean): WhatsAppNotification {
         val now = Date()
         return WhatsAppNotification(
-                content = validContent,
-                payload = emptyMap(),
-                shippingReceipt = null,
-                sentAt = null,
-                deliveryAt = null,
-                seenAt = null,
-                id = EntityId.generate(),
-                createdAt = now,
-                updatedAt = now,
-                from = validFrom,
-                to = validTo,
-                templateName = validTemplateName,
-                isNew = isNew
+            content = validContent,
+            payload = emptyMap(),
+            shippingReceipt = null,
+            sentAt = null,
+            deliveryAt = null,
+            seenAt = null,
+            id = EntityId.generate(),
+            createdAt = now,
+            updatedAt = now,
+            from = validFrom,
+            to = validTo,
+            templateName = validTemplateName,
+            isNew = isNew,
         )
     }
 
@@ -59,34 +59,34 @@ class WhatsAppNotificationTest {
         val aggregateId = EntityId.generate()
         val now = Date()
         val creationEvent =
-                WhatsAppNotificationCreatedEvent(
-                        id = EntityId.generate(),
-                        aggregateId = aggregateId,
-                        aggregateVersion = 0,
-                        occurredAt = now,
-                        content = validContent,
-                        payload = mapOf("key" to "value"),
-                        from = validFrom,
-                        to = validTo,
-                        templateName = validTemplateName
-                )
+            WhatsAppNotificationCreatedEvent(
+                id = EntityId.generate(),
+                aggregateId = aggregateId,
+                aggregateVersion = 0,
+                occurredAt = now,
+                content = validContent,
+                payload = mapOf("key" to "value"),
+                from = validFrom,
+                to = validTo,
+                templateName = validTemplateName,
+            )
 
         val notification =
-                WhatsAppNotification(
-                        content = validContent,
-                        payload = mapOf("key" to "value"),
-                        shippingReceipt = null,
-                        sentAt = null,
-                        deliveryAt = null,
-                        seenAt = null,
-                        id = aggregateId,
-                        createdAt = now,
-                        updatedAt = now,
-                        from = validFrom,
-                        to = validTo,
-                        templateName = validTemplateName,
-                        isNew = false
-                )
+            WhatsAppNotification(
+                content = validContent,
+                payload = mapOf("key" to "value"),
+                shippingReceipt = null,
+                sentAt = null,
+                deliveryAt = null,
+                seenAt = null,
+                id = aggregateId,
+                createdAt = now,
+                updatedAt = now,
+                from = validFrom,
+                to = validTo,
+                templateName = validTemplateName,
+                isNew = false,
+            )
 
         notification.loadFromHistory(listOf(creationEvent))
 

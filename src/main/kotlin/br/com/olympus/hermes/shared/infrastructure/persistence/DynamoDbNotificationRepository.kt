@@ -21,29 +21,29 @@ import jakarta.inject.Inject
  */
 @ApplicationScoped
 class DynamoDbNotificationRepository
-@Inject
-constructor(
+    @Inject
+    constructor(
         private val eventStore: EventStore,
-        private val factoryRegistry: NotificationFactoryRegistry
-) : NotificationRepository {
+        private val factoryRegistry: NotificationFactoryRegistry,
+    ) : NotificationRepository {
+        override fun save(notification: Notification): Either<BaseError, Notification> {
+            val events = notification.uncommittedChanges
+            if (events.isEmpty()) return notification.right()
 
-    override fun save(notification: Notification): Either<BaseError, Notification> {
-        val events = notification.uncommittedChanges
-        if (events.isEmpty()) return notification.right()
-
-        return eventStore.append(notification.id, events, notification.version).map { notification }
-    }
-
-    override fun findById(id: EntityId): Either<BaseError, Notification?> = either {
-        val events = eventStore.getEvents(id).bind()
-        if (events.isEmpty()) return@either null
-
-        val creationEvent =
-                events.find { it is NotificationCreatedEvent } as? NotificationCreatedEvent
-        if (creationEvent == null) return@either null
-
-        return factoryRegistry.getFactory<Notification>(creationEvent.type).flatMap {
-            it.reconstitute(events)
+            return eventStore.append(notification.id, events, notification.version).map { notification }
         }
+
+        override fun findById(id: EntityId): Either<BaseError, Notification?> =
+            either {
+                val events = eventStore.getEvents(id).bind()
+                if (events.isEmpty()) return@either null
+
+                val creationEvent =
+                    events.find { it is NotificationCreatedEvent } as? NotificationCreatedEvent
+                if (creationEvent == null) return@either null
+
+                return factoryRegistry.getFactory<Notification>(creationEvent.type).flatMap {
+                    it.reconstitute(events)
+                }
+            }
     }
-}
