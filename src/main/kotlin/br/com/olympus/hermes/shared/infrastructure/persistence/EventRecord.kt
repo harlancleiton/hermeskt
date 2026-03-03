@@ -1,5 +1,6 @@
 package br.com.olympus.hermes.shared.infrastructure.persistence
 
+import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import io.quarkus.runtime.annotations.RegisterForReflection
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean
@@ -17,13 +18,9 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 @DynamoDbBean
 @RegisterForReflection
 class EventRecord {
-    @get:DynamoDbPartitionKey
-    @get:DynamoDbAttribute("PK")
-    var pk: String = ""
+    @get:DynamoDbPartitionKey @get:DynamoDbAttribute("PK") var pk: String = ""
 
-    @get:DynamoDbSortKey
-    @get:DynamoDbAttribute("SK")
-    var sk: String = ""
+    @get:DynamoDbSortKey @get:DynamoDbAttribute("SK") var sk: String = ""
 
     /** Unique event identifier. */
     var eventId: String = ""
@@ -47,7 +44,8 @@ class EventRecord {
         private const val SK_PAD_LENGTH = 10
 
         /** Formats a version integer into a zero-padded sort key string. */
-        fun sortKey(version: Int): String = version.toString().padStart(SK_PAD_LENGTH, '0')
+        fun sortKey(event: DomainEvent): String =
+                "${event.aggregateId.value}#${event.aggregateType}#${event.aggregateVersion}"
 
         /** Parses a sort key string back into a version integer. */
         fun versionFromSortKey(sk: String): Int = sk.trimStart('0').ifEmpty { "0" }.toInt()

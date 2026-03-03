@@ -11,6 +11,7 @@ import br.com.olympus.hermes.shared.domain.repositories.EventStore
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import java.util.Date
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable
 import software.amazon.awssdk.enhanced.dynamodb.Key
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional
@@ -20,7 +21,6 @@ import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedExce
 import software.amazon.awssdk.services.dynamodb.model.Put
 import software.amazon.awssdk.services.dynamodb.model.TransactWriteItem
 import software.amazon.awssdk.services.dynamodb.model.TransactWriteItemsRequest
-import java.util.Date
 
 /**
  * DynamoDB implementation of [EventStore]. Persists domain events as individual items in a DynamoDB
@@ -32,138 +32,118 @@ import java.util.Date
  */
 @ApplicationScoped
 class DynamoDbEventStore
-    @Inject
-    constructor(
+@Inject
+constructor(
         @param:EventStoreTable private val table: DynamoDbTable<EventRecord>,
         private val dynamoDbClient: DynamoDbClient,
         private val serde: DomainEventSerde,
-    ) : EventStore {
-        override fun append(
+) : EventStore {
+    override fun append(
             aggregateId: EntityId,
             events: List<DomainEvent>,
             expectedVersion: Int,
-        ): Either<BaseError, Unit> {
-            if (events.isEmpty()) return Unit.right()
+    ): Either<BaseError, Unit> {
+        if (events.isEmpty()) return Unit.right()
 
-            val tableName = table.tableName()
-            val transactItems =
-                events.mapIndexed { index, event ->
-                    val version = expectedVersion + index
-                    val record = toRecord(aggregateId, event, version)
-                    TransactWriteItem
-                        .builder()
-                        .put(
-                            Put
-                                .builder()
-                                .tableName(tableName)
-                                .item(toAttributeMap(record))
-                                .conditionExpression(
-                                    "attribute_not_exists(PK) AND attribute_not_exists(SK)",
-                                ).build(),
-                        ).build()
-                }
-
-            return Either
-                .catch {
-                    dynamoDbClient.transactWriteItems(
-                        TransactWriteItemsRequest.builder().transactItems(transactItems).build(),
-                    )
-                }.map {}
-                .mapLeft { ex ->
-                    when (ex) {
-                        is ConditionalCheckFailedException ->
-                            PersistenceError(
-                                "Optimistic concurrency conflict for aggregate ${aggregateId.value} at version $expectedVersion",
-                                ex,
-                            )
-                        else -> PersistenceError(ex.message ?: "Unknown error", ex)
+        val tableName = table.tableName()
+        return either {
+            val items =
+                    events.mapIndexed { index, event ->
+                        val version = expectedVersion + index
+                        val record = toRecord(event, version).bind()
+                        TransactWriteItem.builder()
+                                .put(
+                                        Put.builder()
+                                                .tableName(tableName)
+                                                .item(toAttributeMap(record))
+                                                .conditionExpression(
+                                                        "attribute_not_exists(PK) AND attribute_not_exists(SK)",
+                                                )
+                                                .build(),
+                                )
+                                .build()
                     }
-                }
+            Either.catch {
+                        dynamoDbClient.transactWriteItems(
+                                TransactWriteItemsRequest.builder().transactItems(items).build(),
+                        )
+                    }
+                    .mapLeft { ex ->
+                        when (ex) {
+                            is ConditionalCheckFailedException ->
+                                    PersistenceError(
+                                            "Optimistic concurrency conflict for aggregate ${aggregateId.value} at version $expectedVersion",
+                                            ex,
+                                    )
+                            else -> PersistenceError(ex.message ?: "Unknown error", ex)
+                        }
+                    }
+                    .bind()
         }
+    }
 
-        override fun getEvents(aggregateId: EntityId): Either<BaseError, List<DomainEvent>> {
-            val condition =
+    override fun getEvents(aggregateId: EntityId): Either<BaseError, List<DomainEvent>> {
+        val condition =
                 QueryConditional.keyEqualTo(
-                    Key.builder().partitionValue(aggregateId.value.toString()).build(),
+                        Key.builder().sortValue("${aggregateId.value.toString()}#").build(),
                 )
-            return queryAndDeserialize(condition)
-        }
+        return queryAndDeserialize(condition)
+    }
 
-        override fun getEvents(
-            aggregateId: EntityId,
-            afterVersion: Int,
-        ): Either<BaseError, List<DomainEvent>> {
-            val condition =
-                QueryConditional.sortGreaterThan(
-                    Key
-                        .builder()
-                        .partitionValue(aggregateId.value.toString())
-                        .sortValue(EventRecord.sortKey(afterVersion))
-                        .build(),
-                )
-            return queryAndDeserialize(condition)
-        }
-
-        // ========================================
-        // Internal helpers
-        // ========================================
-
-        private fun queryAndDeserialize(condition: QueryConditional): Either<BaseError, List<DomainEvent>> =
-            either {
-                val records =
-                    Either
-                        .catch { table.query(condition).items().toList() }
+    private fun queryAndDeserialize(
+            condition: QueryConditional
+    ): Either<BaseError, List<DomainEvent>> = either {
+        val records =
+                Either.catch { table.query(condition).items().toList() }
                         .mapLeft<BaseError> { PersistenceError(it.message ?: "Unknown error", it) }
                         .bind()
 
-                records.map { record -> fromRecord(record).bind() }
-            }
+        records.map { record -> fromRecord(record).bind() }
+    }
 
-        private fun toRecord(
-            aggregateId: EntityId,
+    private fun toRecord(
             event: DomainEvent,
             version: Int,
-        ): EventRecord {
-            val record = EventRecord()
-            record.pk = aggregateId.value.toString()
-            record.sk = EventRecord.sortKey(version)
-            record.eventId = event.id.value.toString()
-            record.eventType = event.eventType
-            record.aggregateType = event.aggregateType
-            record.data = serde.serialize(event)
-            record.occurredAt = event.occurredAt.time
-            record.version = version
-            return record
-        }
+    ): Either<BaseError, EventRecord> = either {
+        val record = EventRecord()
+        record.pk = event.id.value.toString()
+        record.sk = EventRecord.sortKey(event)
+        record.eventId = event.id.value.toString()
+        record.eventType = event.eventType
+        record.aggregateType = event.aggregateType
+        record.data = serde.serialize(event).bind()
+        record.occurredAt = event.occurredAt.time
+        record.version = version
+        record
+    }
 
-        private fun fromRecord(record: EventRecord): Either<BaseError, DomainEvent> =
-            either {
-                val eventId = EntityId.from(record.eventId).bind()
-                val aggregateId = EntityId.from(record.pk).bind()
-                serde
-                    .deserialize(
+    private fun fromRecord(record: EventRecord): Either<BaseError, DomainEvent> = either {
+        val eventId = EntityId.from(record.eventId).bind()
+        val aggregateId = EntityId.from(record.pk).bind()
+        serde.deserialize(
                         eventType = record.eventType,
                         eventId = eventId,
                         aggregateId = aggregateId,
                         version = record.version,
                         occurredAt = Date(record.occurredAt),
                         json = record.data,
-                    ).bind()
-            }
-
-        /**
-         * Converts an [EventRecord] bean into a raw DynamoDB attribute map for use in transact write
-         * requests.
-         */
-        private fun toAttributeMap(record: EventRecord): Map<String, AttributeValue> =
-            mapOf(
-                "PK" to AttributeValue.fromS(record.pk),
-                "SK" to AttributeValue.fromS(record.sk),
-                "eventId" to AttributeValue.fromS(record.eventId),
-                "eventType" to AttributeValue.fromS(record.eventType),
-                "aggregateType" to AttributeValue.fromS(record.aggregateType),
-                "data" to AttributeValue.fromS(record.data),
-                "occurredAt" to AttributeValue.fromN(record.occurredAt.toString()),
-                "version" to AttributeValue.fromN(record.version.toString()),
-            )
+                )
+                .bind()
     }
+
+    /**
+     * Converts an [EventRecord] bean into a raw DynamoDB attribute map for use in transact write
+     * requests.
+     */
+    private fun toAttributeMap(record: EventRecord): Map<String, AttributeValue> =
+            mapOf(
+                    "PK" to AttributeValue.fromS(record.pk),
+                    "SK" to AttributeValue.fromS(record.sk),
+                    "eventId" to AttributeValue.fromS(record.eventId),
+                    "eventType" to AttributeValue.fromS(record.eventType),
+                    "aggregateType" to AttributeValue.fromS(record.aggregateType),
+                    "data" to AttributeValue.fromS(record.data),
+                    "occurredAt" to AttributeValue.fromN(record.occurredAt.toString()),
+                    "version" to AttributeValue.fromN(record.version.toString()),
+            )
+}
