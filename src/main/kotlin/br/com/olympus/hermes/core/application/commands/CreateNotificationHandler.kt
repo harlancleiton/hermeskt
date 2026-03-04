@@ -8,7 +8,9 @@ import br.com.olympus.hermes.shared.domain.entities.Notification
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.factories.NotificationFactoryRegistry
 import br.com.olympus.hermes.shared.domain.repositories.NotificationRepository
+import jakarta.enterprise.context.ApplicationScoped
 
+@ApplicationScoped
 class CreateNotificationHandler(
     private val notificationRepository: NotificationRepository,
     private val eventPublisher: DomainEventPublisher,

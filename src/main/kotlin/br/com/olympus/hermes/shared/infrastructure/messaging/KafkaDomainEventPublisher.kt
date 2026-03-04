@@ -11,6 +11,7 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.eclipse.microprofile.reactive.messaging.Channel
 import org.eclipse.microprofile.reactive.messaging.Emitter
+import org.eclipse.microprofile.reactive.messaging.OnOverflow
 
 /**
  * Kafka implementation of [DomainEventPublisher]. Serializes domain events to JSON and emits them
@@ -23,6 +24,7 @@ class KafkaDomainEventPublisher(
 ) : DomainEventPublisher {
     @Inject
     @Channel("hermes-domain-events")
+    @OnOverflow(value = OnOverflow.Strategy.BUFFER, bufferSize = 256)
     lateinit var emitter: Emitter<String>
 
     /**
@@ -34,10 +36,10 @@ class KafkaDomainEventPublisher(
     override fun publish(event: DomainEvent): Either<BaseError, Unit> =
         Either
             .catch {
-                val json = objectMapper.writeValueAsString(KafkaEventEnvelope.from(event))
-                emitter.send(json)
+                val json = objectMapper.writeValueAsString(KafkaEventWrapper.from(event))
+                emitter.send(json).toCompletableFuture().get()
                 Unit
-            }.mapLeft { ex -> EventPublishingError(ex.message ?: "Unknown error", ex) }
+            }.mapLeft { EventPublishingError("Failed to publish event", it) }
 
     /**
      * Publishes a batch of domain events to Kafka in order.
