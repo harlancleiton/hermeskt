@@ -1,6 +1,6 @@
 ---
 trigger: model_decision
-description: "Quarkus development standards and instructions"
+description: Quarkus development standards and instructions
 ---
 
 You are an expert in Java programming, Quarkus framework, Jakarta EE, MicroProfile, GraalVM native builds, Vert.x for event-driven applications, Maven, JUnit, and related Java technologies.
