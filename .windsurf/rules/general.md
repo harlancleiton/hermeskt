@@ -146,8 +146,14 @@ src/main/kotlin/br/com/olympus/hermes/
 - Use **SmallRye Reactive Messaging** (`quarkus-smallrye-reactive-messaging-kafka`).
 - `DomainEventPublisher` port is implemented by a Kafka producer in `shared/infrastructure/messaging/`.
 - After `aggregate.commit()` the command handler calls `DomainEventPublisher.publish(events)`; the publisher emits each event to the appropriate Kafka topic.
-- Event handler consumers use `@Incoming("<topic>")` and deserialise payloads via Jackson.
+- Event handler consumers use `@Incoming("<channel>")` and deserialise payloads via Jackson.
 - Topic naming convention: `hermes.{aggregate}.{event-type}` (kebab-case, all lowercase).
+- **Channel naming**: producer and consumer channels must have **distinct logical names** (e.g. `hermes-domain-events` for outgoing, `hermes-notification-created` for incoming) even when they map to the same Kafka topic. Using the same name for both directions causes SmallRye to wire them as an in-memory loop, bypassing the broker.
+- Channel-to-topic mapping is defined exclusively in `application.properties` under `mp.messaging.outgoing.<channel>.*` and `mp.messaging.incoming.<channel>.*`.
+- **Serialization**: `DomainEvent`s must **never** be serialized directly to Kafka. Use `KafkaEventWrapper`, which wraps the event as a flat `Map<String, Any?>` payload, extracting all `@JvmInline value class` properties to their primitive values. Provide a `toMap()` extension on `DomainEvent` for serialization and a `toXxxEvent()` extension on `KafkaEventWrapper.Companion` for deserialization, manually reconstructing value objects via their companion factory methods.
+- **Producer** (`KafkaDomainEventPublisher`): use `emitter.send(json).toCompletableFuture().get()` to block until the broker acknowledges the record, ensuring failures are captured as `Either.Left`. Annotate the `Emitter` with `@OnOverflow(BUFFER, 256)` for explicit backpressure control.
+- **Consumer** (`@Incoming` methods): always annotate with `@Blocking` when performing any blocking I/O (Jackson deserialization, MongoDB writes). Wrap deserialization in `try/catch` to skip malformed messages gracefully. Propagate `Either.Left` results from `handle()` as a `RuntimeException` so the framework performs a nack — never silently discard errors.
+- **Failure strategy**: configure `mp.messaging.incoming.<channel>.failure-strategy=dead-letter-queue` for all projector consumers so that processing failures are recorded and do not halt the consumer.
 
 ### Testing
 
