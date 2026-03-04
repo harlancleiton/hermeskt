@@ -38,7 +38,14 @@ src/main/kotlin/br/com/olympus/hermes/
 │   └── application/
 │       ├── commands/               # Feature-specific command handlers
 │       ├── queries/                # Feature-specific query handlers
-│       └── eventhandlers/          # Feature-specific event handlers (projectors)
+│       └── eventhandlers/          # Feature-specific event handlers / projectors (application logic)
+├── infrastructure/
+│   ├── kafka/
+│   │   └── consumers/             # @Incoming Kafka consumer classes (SmallRye Reactive Messaging)
+│   └── rest/
+│       ├── controllers/            # JAX-RS @Path resource classes
+│       ├── request/                # HTTP request body DTOs
+│       └── response/               # HTTP response body DTOs
 ├── shared/
 │   ├── application/
 │   │   ├── cqrs/                   # Command / CommandHandler / Query / QueryHandler interfaces
@@ -54,7 +61,7 @@ src/main/kotlin/br/com/olympus/hermes/
 │   └── infrastructure/
 │       ├── persistence/            # DynamoDB implementations, record models, serde (write/event store)
 │       ├── readmodel/              # MongoDB implementations, view models (read store)
-│       └── messaging/              # Kafka producers/consumers (SmallRye Reactive Messaging)
+│       └── messaging/              # Kafka producer (KafkaDomainEventPublisher), KafkaEventWrapper
 ```
 
 ## Coding Conventions — FOLLOW STRICTLY
