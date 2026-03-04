@@ -34,6 +34,7 @@ class SmsNotification(
         if (isNew) {
             applyChange(
                 SMSNotificationCreatedEvent(
+                    aggregateId = id.value.toString(),
                     content = content,
                     payload = payload,
                     from = from,

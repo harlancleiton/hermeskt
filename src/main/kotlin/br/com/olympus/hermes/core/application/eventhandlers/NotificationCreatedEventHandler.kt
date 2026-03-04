@@ -9,7 +9,6 @@ import br.com.olympus.hermes.shared.domain.events.SMSNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.WhatsAppNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.repositories.NotificationViewRepository
-import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import br.com.olympus.hermes.shared.infrastructure.messaging.KafkaEventWrapper
 import br.com.olympus.hermes.shared.infrastructure.messaging.KafkaEventWrapper.Companion.toNotificationCreatedEvent
 import br.com.olympus.hermes.shared.infrastructure.readmodel.NotificationView
@@ -73,10 +72,9 @@ class NotificationCreatedEventHandler(
 
     private fun toView(event: NotificationCreatedEvent): Either<BaseError, NotificationView> =
         either {
-            val id = EntityId.generate()
             val now = Date()
             val view = NotificationView()
-            view.id = id.value.toString()
+            view.id = event.aggregateId
             view.type = event.type.name
             view.content = event.content
             view.payload = event.payload

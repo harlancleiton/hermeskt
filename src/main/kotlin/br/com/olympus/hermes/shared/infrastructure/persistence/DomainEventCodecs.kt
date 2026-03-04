@@ -29,12 +29,16 @@ object EmailNotificationCreatedCodec : EventPayloadCodec<EmailNotificationCreate
         )
 
     @Suppress("UNCHECKED_CAST")
-    override fun deserialize(data: Map<String, Any>): Either<BaseError, EmailNotificationCreatedEvent> =
+    override fun deserialize(
+        data: Map<String, Any>,
+        aggregateId: String,
+    ): Either<BaseError, EmailNotificationCreatedEvent> =
         either {
             val from = Email.from(data["from"] as String).bind()
             val to = Email.from(data["to"] as String).bind()
             val subject = EmailSubject.create(data["subject"] as String).bind()
             EmailNotificationCreatedEvent(
+                aggregateId = aggregateId,
                 content = data["content"] as String,
                 payload = (data["payload"] as? Map<String, Any>) ?: emptyMap(),
                 from = from,
@@ -57,10 +61,14 @@ object SMSNotificationCreatedCodec : EventPayloadCodec<SMSNotificationCreatedEve
         )
 
     @Suppress("UNCHECKED_CAST")
-    override fun deserialize(data: Map<String, Any>): Either<BaseError, SMSNotificationCreatedEvent> =
+    override fun deserialize(
+        data: Map<String, Any>,
+        aggregateId: String,
+    ): Either<BaseError, SMSNotificationCreatedEvent> =
         either {
             val to = BrazilianPhone.create(data["to"] as String).bind()
             SMSNotificationCreatedEvent(
+                aggregateId = aggregateId,
                 content = data["content"] as String,
                 payload = (data["payload"] as? Map<String, Any>) ?: emptyMap(),
                 from = (data["from"] as Number).toInt().toUInt(),
@@ -83,11 +91,15 @@ object WhatsAppNotificationCreatedCodec : EventPayloadCodec<WhatsAppNotification
         )
 
     @Suppress("UNCHECKED_CAST")
-    override fun deserialize(data: Map<String, Any>): Either<BaseError, WhatsAppNotificationCreatedEvent> =
+    override fun deserialize(
+        data: Map<String, Any>,
+        aggregateId: String,
+    ): Either<BaseError, WhatsAppNotificationCreatedEvent> =
         either {
             val from = BrazilianPhone.create(data["from"] as String).bind()
             val to = BrazilianPhone.create(data["to"] as String).bind()
             WhatsAppNotificationCreatedEvent(
+                aggregateId = aggregateId,
                 content = data["content"] as String,
                 payload = (data["payload"] as? Map<String, Any>) ?: emptyMap(),
                 from = from,
@@ -107,7 +119,10 @@ object NotificationSentCodec : EventPayloadCodec<NotificationSentEvent> {
             "sentAt" to event.sentAt.time,
         )
 
-    override fun deserialize(data: Map<String, Any>): Either<BaseError, NotificationSentEvent> =
+    override fun deserialize(
+        data: Map<String, Any>,
+        aggregateId: String,
+    ): Either<BaseError, NotificationSentEvent> =
         Either
             .catch {
                 NotificationSentEvent(
@@ -127,7 +142,10 @@ object NotificationSeenCodec : EventPayloadCodec<NotificationSeenEvent> {
 
     override fun serialize(event: NotificationSeenEvent): Map<String, Any?> = mapOf("seenAt" to event.seenAt.time)
 
-    override fun deserialize(data: Map<String, Any>): Either<BaseError, NotificationSeenEvent> =
+    override fun deserialize(
+        data: Map<String, Any>,
+        aggregateId: String,
+    ): Either<BaseError, NotificationSeenEvent> =
         Either
             .catch {
                 NotificationSeenEvent(
@@ -147,7 +165,10 @@ object NotificationDeliveredCodec : EventPayloadCodec<NotificationDeliveredEvent
     override fun serialize(event: NotificationDeliveredEvent): Map<String, Any?> =
         mapOf("deliveredAt" to event.deliveredAt.time)
 
-    override fun deserialize(data: Map<String, Any>): Either<BaseError, NotificationDeliveredEvent> =
+    override fun deserialize(
+        data: Map<String, Any>,
+        aggregateId: String,
+    ): Either<BaseError, NotificationDeliveredEvent> =
         Either
             .catch {
                 NotificationDeliveredEvent(

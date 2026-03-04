@@ -1,10 +1,12 @@
 package br.com.olympus.hermes.shared.infrastructure.persistence
 
 import arrow.core.Either
+import arrow.core.flatMap
 import arrow.core.left
 import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.PersistenceError
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 
 /**
@@ -38,9 +40,14 @@ interface EventPayloadCodec<E : DomainEvent> {
      * fields (aggregateId, version, occurredAt, etc.) are handled by [DomainEventSerde].
      *
      * @param data Deserialized JSON payload map.
+     * @param aggregateId The aggregate identifier from the event envelope, for events that carry
+     * it.
      * @return Either a [BaseError] if reconstruction fails, or the restored event.
      */
-    fun deserialize(data: Map<String, Any>): Either<BaseError, E>
+    fun deserialize(
+        data: Map<String, Any>,
+        aggregateId: String = "",
+    ): Either<BaseError, E>
 }
 
 /**
@@ -96,5 +103,33 @@ class EventPayloadCodecRegistry {
         return Either.catch { objectMapper.writeValueAsString(codec.serialize(event)) }.mapLeft {
             PersistenceError("Failed to serialize event: $eventType", it)
         }
+    }
+
+    /**
+     * Deserializes [json] into a [DomainEvent] using the codec registered for [eventType], passing
+     * [aggregateId] through to event constructors that require it.
+     *
+     * @param eventType The discriminator string.
+     * @param aggregateId The aggregate identifier from the event envelope.
+     * @param json The JSON-serialized event-specific payload.
+     * @param objectMapper Jackson mapper used to read the JSON string.
+     * @return Either a [BaseError] on failure, or the reconstructed event.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun deserialize(
+        eventType: String,
+        aggregateId: String,
+        json: String,
+        objectMapper: ObjectMapper,
+    ): Either<BaseError, DomainEvent> {
+        val codec =
+            codecs[eventType] as? EventPayloadCodec<DomainEvent>
+                ?: return PersistenceError("No codec registered for event type: $eventType")
+                    .left()
+        return Either
+            .catch {
+                objectMapper.readValue(json, object : TypeReference<Map<String, Any>>() {})
+            }.mapLeft { PersistenceError("Failed to parse JSON for event: $eventType", it) }
+            .flatMap { data -> codec.deserialize(data, aggregateId) }
     }
 }

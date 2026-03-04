@@ -42,6 +42,7 @@ class WhatsAppNotification(
         if (isNew) {
             applyChange(
                 WhatsAppNotificationCreatedEvent(
+                    aggregateId = id.value.toString(),
                     content = content,
                     payload = payload,
                     from = from,

@@ -1,7 +1,7 @@
 package br.com.olympus.hermes.shared.application.ports
 
 import arrow.core.Either
-import br.com.olympus.hermes.shared.domain.events.DomainEvent
+import br.com.olympus.hermes.shared.domain.events.EventWrapper
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 
 /**
@@ -15,13 +15,13 @@ interface DomainEventPublisher {
      * @param event The domain event to publish.
      * @return Either a BaseError on failure or Unit on success.
      */
-    fun publish(event: DomainEvent): Either<BaseError, Unit>
+    fun publish(event: EventWrapper): Either<BaseError, Unit>
 
     /**
      * Publishes a batch of domain events in order.
      *
-     * @param events The list of domain events to publish.
+     * @param events The list of event wrappers to publish.
      * @return Either a BaseError on failure or Unit on success.
      */
-    fun publishAll(events: List<DomainEvent>): Either<BaseError, Unit>
+    fun publishAll(events: List<EventWrapper>): Either<BaseError, Unit>
 }

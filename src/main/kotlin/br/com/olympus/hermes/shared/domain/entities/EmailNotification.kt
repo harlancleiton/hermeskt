@@ -35,6 +35,7 @@ class EmailNotification(
         if (isNew) {
             applyChange(
                 EmailNotificationCreatedEvent(
+                    aggregateId = id.value.toString(),
                     content = content,
                     payload = payload,
                     from = from,

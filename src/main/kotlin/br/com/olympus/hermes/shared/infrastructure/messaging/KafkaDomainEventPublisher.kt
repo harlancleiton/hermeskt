@@ -3,7 +3,7 @@ package br.com.olympus.hermes.shared.infrastructure.messaging
 import arrow.core.Either
 import arrow.core.right
 import br.com.olympus.hermes.shared.application.ports.DomainEventPublisher
-import br.com.olympus.hermes.shared.domain.events.DomainEvent
+import br.com.olympus.hermes.shared.domain.events.EventWrapper
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.EventPublishingError
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -33,7 +33,7 @@ class KafkaDomainEventPublisher(
      * @param event The domain event to publish.
      * @return Either an [EventPublishingError] on failure or [Unit] on success.
      */
-    override fun publish(event: DomainEvent): Either<BaseError, Unit> =
+    override fun publish(event: EventWrapper): Either<BaseError, Unit> =
         Either
             .catch {
                 val json = objectMapper.writeValueAsString(KafkaEventWrapper.from(event))
@@ -44,10 +44,10 @@ class KafkaDomainEventPublisher(
     /**
      * Publishes a batch of domain events to Kafka in order.
      *
-     * @param events The list of domain events to publish.
+     * @param events The list of event wrappers to publish.
      * @return Either an [EventPublishingError] on the first failure or [Unit] on success.
      */
-    override fun publishAll(events: List<DomainEvent>): Either<BaseError, Unit> {
+    override fun publishAll(events: List<EventWrapper>): Either<BaseError, Unit> {
         for (event in events) {
             publish(event).onLeft {
                 return Either.Left(it)

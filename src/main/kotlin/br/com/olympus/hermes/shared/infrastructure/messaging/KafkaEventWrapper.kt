@@ -2,6 +2,7 @@ package br.com.olympus.hermes.shared.infrastructure.messaging
 
 import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import br.com.olympus.hermes.shared.domain.events.EmailNotificationCreatedEvent
+import br.com.olympus.hermes.shared.domain.events.EventWrapper
 import br.com.olympus.hermes.shared.domain.events.NotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.SMSNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.WhatsAppNotificationCreatedEvent
@@ -31,11 +32,14 @@ data class KafkaEventWrapper(
          * @param event The domain event to wrap.
          * @return A new [KafkaEventWrapper] instance.
          */
-        fun from(event: DomainEvent): KafkaEventWrapper =
+        fun from(wrapper: EventWrapper): KafkaEventWrapper =
             KafkaEventWrapper(
-                eventType = event::class.simpleName ?: "UnknownEvent",
-                occurredAt = Date(),
-                payload = event.toMap(),
+                eventType = wrapper.payload::class.simpleName ?: "UnknownEvent",
+                occurredAt = wrapper.occurredAt,
+                payload =
+                    wrapper.payload.toMap(
+                        aggregateId = wrapper.aggregateId.value.toString(),
+                    ),
             )
 
         /**
@@ -47,6 +51,7 @@ data class KafkaEventWrapper(
         @Suppress("UNCHECKED_CAST")
         fun KafkaEventWrapper.toNotificationCreatedEvent(): NotificationCreatedEvent? {
             val p = payload
+            val aggregateId = p["aggregateId"] as? String ?: return null
             val content = p["content"] as? String ?: return null
 
             @Suppress("UNCHECKED_CAST")
@@ -63,6 +68,7 @@ data class KafkaEventWrapper(
                         EmailSubject.create(p["subject"] as? String ?: return null).getOrNull()
                             ?: return null
                     EmailNotificationCreatedEvent(
+                        aggregateId = aggregateId,
                         content = content,
                         payload = eventPayload,
                         from = from,
@@ -76,6 +82,7 @@ data class KafkaEventWrapper(
                         BrazilianPhone.create(p["to"] as? String ?: return null).getOrNull()
                             ?: return null
                     SMSNotificationCreatedEvent(
+                        aggregateId = aggregateId,
                         content = content,
                         payload = eventPayload,
                         from = from,
@@ -91,6 +98,7 @@ data class KafkaEventWrapper(
                             ?: return null
                     val templateName = p["templateName"] as? String ?: return null
                     WhatsAppNotificationCreatedEvent(
+                        aggregateId = aggregateId,
                         content = content,
                         payload = eventPayload,
                         from = from,
@@ -105,10 +113,11 @@ data class KafkaEventWrapper(
 }
 
 @Suppress("UNCHECKED_CAST")
-private fun DomainEvent.toMap(): Map<String, Any?> =
+private fun DomainEvent.toMap(aggregateId: String = ""): Map<String, Any?> =
     when (this) {
         is EmailNotificationCreatedEvent ->
             mapOf(
+                "aggregateId" to aggregateId,
                 "content" to content,
                 "payload" to payload,
                 "from" to from.value,
@@ -117,6 +126,7 @@ private fun DomainEvent.toMap(): Map<String, Any?> =
             )
         is SMSNotificationCreatedEvent ->
             mapOf(
+                "aggregateId" to aggregateId,
                 "content" to content,
                 "payload" to payload,
                 "from" to from.toInt(),
@@ -124,6 +134,7 @@ private fun DomainEvent.toMap(): Map<String, Any?> =
             )
         is WhatsAppNotificationCreatedEvent ->
             mapOf(
+                "aggregateId" to aggregateId,
                 "content" to content,
                 "payload" to payload,
                 "from" to from.value,

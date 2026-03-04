@@ -27,8 +27,7 @@ abstract class AggregateRoot
         fun commit(publisher: DomainEventPublisher): Either<BaseError, Unit> {
             if (changes.isEmpty()) return Either.Right(Unit)
 
-            val events = changes.map { it.payload }
-            return publisher.publishAll(events).onRight { changes.clear() }
+            return publisher.publishAll(changes).onRight { changes.clear() }
         }
 
         fun uncommit() {

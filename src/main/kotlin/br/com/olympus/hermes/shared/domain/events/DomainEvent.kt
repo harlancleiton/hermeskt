@@ -22,12 +22,14 @@ data class NotificationDeliveredEvent(
 ) : DomainEvent
 
 sealed interface NotificationCreatedEvent : DomainEvent {
+    val aggregateId: String
     val content: String
     val payload: Map<String, Any>
     val type: NotificationType
 }
 
 data class EmailNotificationCreatedEvent(
+    override val aggregateId: String,
     override val content: String,
     override val payload: Map<String, Any>,
     val from: Email,
@@ -38,6 +40,7 @@ data class EmailNotificationCreatedEvent(
 }
 
 data class SMSNotificationCreatedEvent(
+    override val aggregateId: String,
     override val content: String,
     override val payload: Map<String, Any>,
     // TODO add PhoneNumber value object
@@ -48,6 +51,7 @@ data class SMSNotificationCreatedEvent(
 }
 
 data class WhatsAppNotificationCreatedEvent(
+    override val aggregateId: String,
     override val content: String,
     override val payload: Map<String, Any>,
     val from: BrazilianPhone,
