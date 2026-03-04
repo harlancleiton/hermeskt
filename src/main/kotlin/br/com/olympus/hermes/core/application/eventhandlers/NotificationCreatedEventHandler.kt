@@ -14,7 +14,6 @@ import br.com.olympus.hermes.shared.infrastructure.messaging.KafkaEventEnvelope
 import br.com.olympus.hermes.shared.infrastructure.readmodel.NotificationView
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.enterprise.context.ApplicationScoped
-import jakarta.inject.Inject
 import org.eclipse.microprofile.reactive.messaging.Incoming
 import java.util.Date
 
@@ -24,11 +23,10 @@ import java.util.Date
  * same read-model state.
  */
 @ApplicationScoped
-class NotificationCreatedEventHandler : EventHandler<NotificationCreatedEvent> {
-    @Inject lateinit var viewRepository: NotificationViewRepository
-
-    @Inject lateinit var objectMapper: ObjectMapper
-
+class NotificationCreatedEventHandler(
+    private val viewRepository: NotificationViewRepository,
+    private val objectMapper: ObjectMapper,
+) : EventHandler<NotificationCreatedEvent> {
     /**
      * Handles a [NotificationCreatedEvent] by creating or updating the [NotificationView] document
      * in MongoDB.

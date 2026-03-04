@@ -18,13 +18,12 @@ import org.eclipse.microprofile.reactive.messaging.Emitter
  * from the event type name following the convention: `hermes.notification.{event-type}`.
  */
 @ApplicationScoped
-class KafkaDomainEventPublisher : DomainEventPublisher {
+class KafkaDomainEventPublisher(
+    private val objectMapper: ObjectMapper,
+) : DomainEventPublisher {
     @Inject
     @Channel("hermes-domain-events")
     lateinit var emitter: Emitter<String>
-
-    @Inject
-    lateinit var objectMapper: ObjectMapper
 
     /**
      * Publishes a single domain event to Kafka.
@@ -48,7 +47,9 @@ class KafkaDomainEventPublisher : DomainEventPublisher {
      */
     override fun publishAll(events: List<DomainEvent>): Either<BaseError, Unit> {
         for (event in events) {
-            publish(event).onLeft { return Either.Left(it) }
+            publish(event).onLeft {
+                return Either.Left(it)
+            }
         }
         return Unit.right()
     }

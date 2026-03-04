@@ -9,17 +9,15 @@ import br.com.olympus.hermes.shared.domain.repositories.NotificationViewReposito
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import br.com.olympus.hermes.shared.infrastructure.readmodel.NotificationView
 import jakarta.enterprise.context.ApplicationScoped
-import jakarta.inject.Inject
 
 /**
  * Query handler that retrieves a single [NotificationView] from MongoDB by its aggregate
  * identifier. Reads exclusively from the read model — never touches DynamoDB.
  */
 @ApplicationScoped
-class GetNotificationQueryHandler : QueryHandler<GetNotificationQuery, NotificationView?> {
-    @Inject
-    lateinit var viewRepository: NotificationViewRepository
-
+class GetNotificationQueryHandler(
+    private val viewRepository: NotificationViewRepository,
+) : QueryHandler<GetNotificationQuery, NotificationView?> {
     /**
      * Handles the [GetNotificationQuery] by looking up the notification view in MongoDB.
      *
