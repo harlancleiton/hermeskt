@@ -1,0 +1,55 @@
+package br.com.olympus.hermes.shared.infrastructure.messaging
+
+import arrow.core.Either
+import arrow.core.right
+import br.com.olympus.hermes.shared.application.ports.DomainEventPublisher
+import br.com.olympus.hermes.shared.domain.events.DomainEvent
+import br.com.olympus.hermes.shared.domain.exceptions.BaseError
+import br.com.olympus.hermes.shared.domain.exceptions.EventPublishingError
+import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.enterprise.context.ApplicationScoped
+import jakarta.inject.Inject
+import org.eclipse.microprofile.reactive.messaging.Channel
+import org.eclipse.microprofile.reactive.messaging.Emitter
+
+/**
+ * Kafka implementation of [DomainEventPublisher]. Serializes domain events to JSON and emits them
+ * to the appropriate Kafka topic via SmallRye Reactive Messaging [Emitter]. Topic name is derived
+ * from the event type name following the convention: `hermes.notification.{event-type}`.
+ */
+@ApplicationScoped
+class KafkaDomainEventPublisher : DomainEventPublisher {
+    @Inject
+    @Channel("hermes-domain-events")
+    lateinit var emitter: Emitter<String>
+
+    @Inject
+    lateinit var objectMapper: ObjectMapper
+
+    /**
+     * Publishes a single domain event to Kafka.
+     *
+     * @param event The domain event to publish.
+     * @return Either an [EventPublishingError] on failure or [Unit] on success.
+     */
+    override fun publish(event: DomainEvent): Either<BaseError, Unit> =
+        Either
+            .catch {
+                val json = objectMapper.writeValueAsString(KafkaEventEnvelope.from(event))
+                emitter.send(json)
+                Unit
+            }.mapLeft { ex -> EventPublishingError(ex.message ?: "Unknown error", ex) }
+
+    /**
+     * Publishes a batch of domain events to Kafka in order.
+     *
+     * @param events The list of domain events to publish.
+     * @return Either an [EventPublishingError] on the first failure or [Unit] on success.
+     */
+    override fun publishAll(events: List<DomainEvent>): Either<BaseError, Unit> {
+        for (event in events) {
+            publish(event).onLeft { return Either.Left(it) }
+        }
+        return Unit.right()
+    }
+}

@@ -1,7 +1,10 @@
 package br.com.olympus.hermes.shared.domain.entities
 
+import arrow.core.Either
+import br.com.olympus.hermes.shared.application.ports.DomainEventPublisher
 import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import br.com.olympus.hermes.shared.domain.events.EventWrapper
+import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import java.util.Date
 
@@ -21,11 +24,11 @@ abstract class AggregateRoot
 
         protected abstract fun apply(event: DomainEvent)
 
-        fun commit() {
-            if (changes.isEmpty()) return
+        fun commit(publisher: DomainEventPublisher): Either<BaseError, Unit> {
+            if (changes.isEmpty()) return Either.Right(Unit)
 
-            // TODO Publish events
-            changes.clear()
+            val events = changes.map { it.payload }
+            return publisher.publishAll(events).onRight { changes.clear() }
         }
 
         fun uncommit() {

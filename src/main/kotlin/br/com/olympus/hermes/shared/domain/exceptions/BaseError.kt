@@ -200,3 +200,30 @@ data class EventPublishingError(
 ) : ServerError {
     override val message: String = "Failed to publish domain event: $reason"
 }
+
+/**
+ * Error indicating a failure while projecting a domain event into the read model.
+ *
+ * @property reason A description of the projection failure.
+ */
+data class ProjectionError(
+    val reason: String,
+    override val cause: Throwable? = null,
+) : ServerError {
+    override val message: String = "Failed to project event into read model: $reason"
+}
+
+// ========================================
+// Query / Read Model Errors
+// ========================================
+
+/**
+ * Error indicating that the requested notification was not found in the read model.
+ *
+ * @property id The identifier that was searched for.
+ */
+data class NotificationNotFoundError(
+    val id: String,
+) : ClientError {
+    override val message: String = "Notification with id '$id' was not found."
+}
