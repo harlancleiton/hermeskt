@@ -65,8 +65,9 @@ src/main/kotlin/br/com/olympus/hermes/
 - **Final newline**: always insert a final newline at end of file.
 - **Line endings**: LF.
 - Write **idiomatic Kotlin**: prefer `when` expressions, data classes, sealed interfaces, extension functions, and Kotlin-specific patterns.
-- Use `lateinit var` with `@Inject` for Quarkus CDI field injection.
-- Constructor injection is used in non-CDI classes (e.g., handlers, factories).
+- Use **constructor injection** for all CDI beans (`@ApplicationScoped`, etc.). Annotate the constructor with `@Inject` when Quarkus requires it (e.g. when the class has multiple constructors or uses qualifiers).
+- The **only exception** is `@Channel`-annotated `Emitter` fields (SmallRye Reactive Messaging limitation): these must remain `@Inject lateinit var`.
+- Never use `@Inject lateinit var` for regular dependencies — always prefer constructor injection.
 
 ### Functional Error Handling (Arrow-kt)
 
