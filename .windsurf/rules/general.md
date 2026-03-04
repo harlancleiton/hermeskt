@@ -122,3 +122,4 @@ src/main/kotlin/br/com/olympus/hermes/
 5. **New error type**: add as `data class` implementing `ClientError` or `ServerError` in `BaseError.kt`, in the appropriate section.
 6. **Never** add infrastructure dependencies (AWS SDK, Quarkus, Jakarta) to domain layer code.
 7. **Always** run `./mvnw compile` to verify changes compile before considering a task done.
+8. **Always** run `./mvnw ktlint:format` to format code before considering a task done.
