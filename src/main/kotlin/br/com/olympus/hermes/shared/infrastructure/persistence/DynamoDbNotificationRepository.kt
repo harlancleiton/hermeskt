@@ -30,7 +30,8 @@ class DynamoDbNotificationRepository
             val events = notification.uncommittedChanges
             if (events.isEmpty()) return notification.right()
 
-            return eventStore.append(notification.id, events, notification.version).map { notification }
+            val expectedVersion = notification.version - events.size
+            return eventStore.append(notification.id, events, expectedVersion).map { notification }
         }
 
         override fun findById(id: EntityId): Either<BaseError, Notification?> =
@@ -38,8 +39,8 @@ class DynamoDbNotificationRepository
                 val events = eventStore.getEvents(id).bind()
                 if (events.isEmpty()) return@either null
 
-                val creationEvent =
-                    events.find { it is NotificationCreatedEvent } as? NotificationCreatedEvent
+                val creationEnvelope = events.find { it.payload is NotificationCreatedEvent }
+                val creationEvent = creationEnvelope?.payload as? NotificationCreatedEvent
                 if (creationEvent == null) return@either null
 
                 return factoryRegistry.getFactory<Notification>(creationEvent.type).flatMap {

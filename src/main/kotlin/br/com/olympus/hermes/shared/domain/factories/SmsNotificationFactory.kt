@@ -8,7 +8,7 @@ import arrow.core.raise.ensure
 import arrow.core.raise.zipOrAccumulate
 import arrow.core.right
 import br.com.olympus.hermes.shared.domain.entities.SmsNotification
-import br.com.olympus.hermes.shared.domain.events.DomainEvent
+import br.com.olympus.hermes.shared.domain.events.EventWrapper
 import br.com.olympus.hermes.shared.domain.events.SMSNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.EmptyContentError
@@ -40,9 +40,7 @@ class SmsNotificationFactory : NotificationFactory<SmsNotification> {
                 listOf(
                     InvalidNotificationInputError(
                         expected = "Sms",
-                        actual =
-                            input::class.simpleName
-                                ?: "Unknown",
+                        actual = input::class.simpleName ?: "Unknown",
                     ),
                 ),
             ).left()
@@ -50,11 +48,7 @@ class SmsNotificationFactory : NotificationFactory<SmsNotification> {
 
         return either<NonEmptyList<BaseError>, SmsNotification> {
             zipOrAccumulate(
-                {
-                    ensure(input.content.isNotBlank()) {
-                        EmptyContentError("content")
-                    }
-                },
+                { ensure(input.content.isNotBlank()) { EmptyContentError("content") } },
                 { BrazilianPhone.create(input.to).bind() },
             ) { _, to ->
                 val now = Date()
@@ -77,22 +71,22 @@ class SmsNotificationFactory : NotificationFactory<SmsNotification> {
     }
 
     /**
-     * Reconstitutes a [SmsNotification] from its event history. Validates that events list is
-     * not empty and contains the required creation event.
+     * Reconstitutes a [SmsNotification] from its event history. Validates that events list is not
+     * empty and contains the required creation event.
      *
-     * @param events The domain event history. Must contain at least
-     * [SMSNotificationCreatedEvent].
+     * @param events The domain event history. Must contain at least [SMSNotificationCreatedEvent].
      * @return Either a [BaseError] or the reconstituted [SmsNotification].
      */
-    override fun reconstitute(events: List<DomainEvent>): Either<BaseError, SmsNotification> {
+    override fun reconstitute(events: List<EventWrapper>): Either<BaseError, SmsNotification> {
         if (events.isEmpty()) {
             return InvalidEventHistoryError("Event history cannot be empty").left()
         }
 
-        val creationEvent =
-            events.filterIsInstance<SMSNotificationCreatedEvent>().firstOrNull()
-                ?: return MissingCreationEventError("SMSNotificationCreatedEvent")
-                    .left()
+        val creationEnvelope =
+            events.find { it.payload is SMSNotificationCreatedEvent }
+                ?: return MissingCreationEventError("SMSNotificationCreatedEvent").left()
+
+        val creationEvent = creationEnvelope.payload as SMSNotificationCreatedEvent
 
         val notification =
             SmsNotification(
@@ -102,9 +96,9 @@ class SmsNotificationFactory : NotificationFactory<SmsNotification> {
                 sentAt = null,
                 deliveryAt = null,
                 seenAt = null,
-                id = creationEvent.aggregateId,
-                createdAt = creationEvent.occurredAt,
-                updatedAt = creationEvent.occurredAt,
+                id = creationEnvelope.aggregateId,
+                createdAt = creationEnvelope.occurredAt,
+                updatedAt = creationEnvelope.occurredAt,
                 from = creationEvent.from,
                 to = creationEvent.to,
                 isNew = false,

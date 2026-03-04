@@ -8,7 +8,7 @@ import arrow.core.raise.ensure
 import arrow.core.raise.zipOrAccumulate
 import arrow.core.right
 import br.com.olympus.hermes.shared.domain.entities.WhatsAppNotification
-import br.com.olympus.hermes.shared.domain.events.DomainEvent
+import br.com.olympus.hermes.shared.domain.events.EventWrapper
 import br.com.olympus.hermes.shared.domain.events.WhatsAppNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.EmptyContentError
@@ -85,15 +85,17 @@ class WhatsAppNotificationFactory : NotificationFactory<WhatsAppNotification> {
      * [WhatsAppNotificationCreatedEvent].
      * @return Either a [BaseError] or the reconstituted [WhatsAppNotification].
      */
-    override fun reconstitute(events: List<DomainEvent>): Either<BaseError, WhatsAppNotification> {
+    override fun reconstitute(events: List<EventWrapper>): Either<BaseError, WhatsAppNotification> {
         if (events.isEmpty()) {
             return InvalidEventHistoryError("Event history cannot be empty").left()
         }
 
-        val creationEvent =
-            events.filterIsInstance<WhatsAppNotificationCreatedEvent>().firstOrNull()
+        val creationEnvelope =
+            events.find { it.payload is WhatsAppNotificationCreatedEvent }
                 ?: return MissingCreationEventError("WhatsAppNotificationCreatedEvent")
                     .left()
+
+        val creationEvent = creationEnvelope.payload as WhatsAppNotificationCreatedEvent
 
         val notification =
             WhatsAppNotification(
@@ -103,9 +105,9 @@ class WhatsAppNotificationFactory : NotificationFactory<WhatsAppNotification> {
                 sentAt = null,
                 deliveryAt = null,
                 seenAt = null,
-                id = creationEvent.aggregateId,
-                createdAt = creationEvent.occurredAt,
-                updatedAt = creationEvent.occurredAt,
+                id = creationEnvelope.aggregateId,
+                createdAt = creationEnvelope.occurredAt,
+                updatedAt = creationEnvelope.occurredAt,
                 from = creationEvent.from,
                 to = creationEvent.to,
                 templateName = creationEvent.templateName,

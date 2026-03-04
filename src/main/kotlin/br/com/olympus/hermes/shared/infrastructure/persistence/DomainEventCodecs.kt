@@ -13,7 +13,6 @@ import br.com.olympus.hermes.shared.domain.exceptions.PersistenceError
 import br.com.olympus.hermes.shared.domain.valueobjects.BrazilianPhone
 import br.com.olympus.hermes.shared.domain.valueobjects.Email
 import br.com.olympus.hermes.shared.domain.valueobjects.EmailSubject
-import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import java.util.Date
 
 /** [EventPayloadCodec] for [EmailNotificationCreatedEvent]. */
@@ -30,22 +29,12 @@ object EmailNotificationCreatedCodec : EventPayloadCodec<EmailNotificationCreate
         )
 
     @Suppress("UNCHECKED_CAST")
-    override fun deserialize(
-        eventId: EntityId,
-        aggregateId: EntityId,
-        version: Int,
-        occurredAt: Date,
-        data: Map<String, Any>,
-    ): Either<BaseError, EmailNotificationCreatedEvent> =
+    override fun deserialize(data: Map<String, Any>): Either<BaseError, EmailNotificationCreatedEvent> =
         either {
             val from = Email.from(data["from"] as String).bind()
             val to = Email.from(data["to"] as String).bind()
             val subject = EmailSubject.create(data["subject"] as String).bind()
             EmailNotificationCreatedEvent(
-                id = eventId,
-                aggregateId = aggregateId,
-                aggregateVersion = version,
-                occurredAt = occurredAt,
                 content = data["content"] as String,
                 payload = (data["payload"] as? Map<String, Any>) ?: emptyMap(),
                 from = from,
@@ -68,20 +57,10 @@ object SMSNotificationCreatedCodec : EventPayloadCodec<SMSNotificationCreatedEve
         )
 
     @Suppress("UNCHECKED_CAST")
-    override fun deserialize(
-        eventId: EntityId,
-        aggregateId: EntityId,
-        version: Int,
-        occurredAt: Date,
-        data: Map<String, Any>,
-    ): Either<BaseError, SMSNotificationCreatedEvent> =
+    override fun deserialize(data: Map<String, Any>): Either<BaseError, SMSNotificationCreatedEvent> =
         either {
             val to = BrazilianPhone.create(data["to"] as String).bind()
             SMSNotificationCreatedEvent(
-                id = eventId,
-                aggregateId = aggregateId,
-                aggregateVersion = version,
-                occurredAt = occurredAt,
                 content = data["content"] as String,
                 payload = (data["payload"] as? Map<String, Any>) ?: emptyMap(),
                 from = (data["from"] as Number).toInt().toUInt(),
@@ -104,21 +83,11 @@ object WhatsAppNotificationCreatedCodec : EventPayloadCodec<WhatsAppNotification
         )
 
     @Suppress("UNCHECKED_CAST")
-    override fun deserialize(
-        eventId: EntityId,
-        aggregateId: EntityId,
-        version: Int,
-        occurredAt: Date,
-        data: Map<String, Any>,
-    ): Either<BaseError, WhatsAppNotificationCreatedEvent> =
+    override fun deserialize(data: Map<String, Any>): Either<BaseError, WhatsAppNotificationCreatedEvent> =
         either {
             val from = BrazilianPhone.create(data["from"] as String).bind()
             val to = BrazilianPhone.create(data["to"] as String).bind()
             WhatsAppNotificationCreatedEvent(
-                id = eventId,
-                aggregateId = aggregateId,
-                aggregateVersion = version,
-                occurredAt = occurredAt,
                 content = data["content"] as String,
                 payload = (data["payload"] as? Map<String, Any>) ?: emptyMap(),
                 from = from,
@@ -133,23 +102,21 @@ object NotificationSentCodec : EventPayloadCodec<NotificationSentEvent> {
     override val eventType = "NotificationSentEvent"
 
     override fun serialize(event: NotificationSentEvent): Map<String, Any?> =
-        mapOf("shippingReceipt" to event.shippingReceipt)
+        mapOf(
+            "shippingReceipt" to event.shippingReceipt,
+            "sentAt" to event.sentAt.time,
+        )
 
-    override fun deserialize(
-        eventId: EntityId,
-        aggregateId: EntityId,
-        version: Int,
-        occurredAt: Date,
-        data: Map<String, Any>,
-    ): Either<BaseError, NotificationSentEvent> =
+    override fun deserialize(data: Map<String, Any>): Either<BaseError, NotificationSentEvent> =
         Either
             .catch {
                 NotificationSentEvent(
-                    id = eventId,
-                    aggregateId = aggregateId,
-                    aggregateVersion = version,
-                    occurredAt = occurredAt,
                     shippingReceipt = data["shippingReceipt"] ?: "",
+                    sentAt =
+                        Date(
+                            (data["sentAt"] as? Number)?.toLong()
+                                ?: System.currentTimeMillis(),
+                        ),
                 )
             }.mapLeft { PersistenceError("Failed to deserialize NotificationSentEvent", it) }
 }
@@ -158,22 +125,17 @@ object NotificationSentCodec : EventPayloadCodec<NotificationSentEvent> {
 object NotificationSeenCodec : EventPayloadCodec<NotificationSeenEvent> {
     override val eventType = "NotificationSeenEvent"
 
-    override fun serialize(event: NotificationSeenEvent): Map<String, Any?> = emptyMap()
+    override fun serialize(event: NotificationSeenEvent): Map<String, Any?> = mapOf("seenAt" to event.seenAt.time)
 
-    override fun deserialize(
-        eventId: EntityId,
-        aggregateId: EntityId,
-        version: Int,
-        occurredAt: Date,
-        data: Map<String, Any>,
-    ): Either<BaseError, NotificationSeenEvent> =
+    override fun deserialize(data: Map<String, Any>): Either<BaseError, NotificationSeenEvent> =
         Either
             .catch {
                 NotificationSeenEvent(
-                    id = eventId,
-                    aggregateId = aggregateId,
-                    aggregateVersion = version,
-                    occurredAt = occurredAt,
+                    seenAt =
+                        Date(
+                            (data["seenAt"] as? Number)?.toLong()
+                                ?: System.currentTimeMillis(),
+                        ),
                 )
             }.mapLeft { PersistenceError("Failed to deserialize NotificationSeenEvent", it) }
 }
@@ -182,22 +144,18 @@ object NotificationSeenCodec : EventPayloadCodec<NotificationSeenEvent> {
 object NotificationDeliveredCodec : EventPayloadCodec<NotificationDeliveredEvent> {
     override val eventType = "NotificationDeliveredEvent"
 
-    override fun serialize(event: NotificationDeliveredEvent): Map<String, Any?> = emptyMap()
+    override fun serialize(event: NotificationDeliveredEvent): Map<String, Any?> =
+        mapOf("deliveredAt" to event.deliveredAt.time)
 
-    override fun deserialize(
-        eventId: EntityId,
-        aggregateId: EntityId,
-        version: Int,
-        occurredAt: Date,
-        data: Map<String, Any>,
-    ): Either<BaseError, NotificationDeliveredEvent> =
+    override fun deserialize(data: Map<String, Any>): Either<BaseError, NotificationDeliveredEvent> =
         Either
             .catch {
                 NotificationDeliveredEvent(
-                    id = eventId,
-                    aggregateId = aggregateId,
-                    aggregateVersion = version,
-                    occurredAt = occurredAt,
+                    deliveredAt =
+                        Date(
+                            (data["deliveredAt"] as? Number)?.toLong()
+                                ?: System.currentTimeMillis(),
+                        ),
                 )
             }.mapLeft {
                 PersistenceError("Failed to deserialize NotificationDeliveredEvent", it)

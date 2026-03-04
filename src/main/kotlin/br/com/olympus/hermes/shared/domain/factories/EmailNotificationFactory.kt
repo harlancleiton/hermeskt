@@ -8,8 +8,8 @@ import arrow.core.raise.ensure
 import arrow.core.raise.zipOrAccumulate
 import arrow.core.right
 import br.com.olympus.hermes.shared.domain.entities.EmailNotification
-import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import br.com.olympus.hermes.shared.domain.events.EmailNotificationCreatedEvent
+import br.com.olympus.hermes.shared.domain.events.EventWrapper
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.EmptyContentError
 import br.com.olympus.hermes.shared.domain.exceptions.InvalidEventHistoryError
@@ -40,9 +40,7 @@ class EmailNotificationFactory : NotificationFactory<EmailNotification> {
                 listOf(
                     InvalidNotificationInputError(
                         expected = "Email",
-                        actual =
-                            input::class.simpleName
-                                ?: "Unknown",
+                        actual = input::class.simpleName ?: "Unknown",
                     ),
                 ),
             ).left()
@@ -50,11 +48,7 @@ class EmailNotificationFactory : NotificationFactory<EmailNotification> {
 
         return either<NonEmptyList<BaseError>, EmailNotification> {
             zipOrAccumulate(
-                {
-                    ensure(input.content.isNotBlank()) {
-                        EmptyContentError("content")
-                    }
-                },
+                { ensure(input.content.isNotBlank()) { EmptyContentError("content") } },
                 { Email.from(input.from).bind() },
                 { Email.from(input.to).bind() },
                 { EmailSubject.create(input.subject).bind() },
@@ -80,22 +74,23 @@ class EmailNotificationFactory : NotificationFactory<EmailNotification> {
     }
 
     /**
-     * Reconstitutes an [EmailNotification] from its event history. Validates that events list
-     * is not empty and contains the required creation event.
+     * Reconstitutes an [EmailNotification] from its event history. Validates that events list is
+     * not empty and contains the required creation event.
      *
-     * @param events The domain event history. Must contain at least
-     * [EmailNotificationCreatedEvent].
+     * @param events The domain event history. Must contain at least [EmailNotificationCreatedEvent]
+     * .
      * @return Either a [BaseError] or the reconstituted [EmailNotification].
      */
-    override fun reconstitute(events: List<DomainEvent>): Either<BaseError, EmailNotification> {
+    override fun reconstitute(events: List<EventWrapper>): Either<BaseError, EmailNotification> {
         if (events.isEmpty()) {
             return InvalidEventHistoryError("Event history cannot be empty").left()
         }
 
-        val creationEvent =
-            events.filterIsInstance<EmailNotificationCreatedEvent>().firstOrNull()
-                ?: return MissingCreationEventError("EmailNotificationCreatedEvent")
-                    .left()
+        val creationEnvelope =
+            events.find { it.payload is EmailNotificationCreatedEvent }
+                ?: return MissingCreationEventError("EmailNotificationCreatedEvent").left()
+
+        val creationEvent = creationEnvelope.payload as EmailNotificationCreatedEvent
 
         val notification =
             EmailNotification(
@@ -105,9 +100,9 @@ class EmailNotificationFactory : NotificationFactory<EmailNotification> {
                 sentAt = null,
                 deliveryAt = null,
                 seenAt = null,
-                id = creationEvent.aggregateId,
-                createdAt = creationEvent.occurredAt,
-                updatedAt = creationEvent.occurredAt,
+                id = creationEnvelope.aggregateId,
+                createdAt = creationEnvelope.occurredAt,
+                updatedAt = creationEnvelope.occurredAt,
                 from = creationEvent.from,
                 to = creationEvent.to,
                 subject = creationEvent.subject,

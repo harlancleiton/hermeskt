@@ -5,9 +5,7 @@ import arrow.core.left
 import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.PersistenceError
-import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.util.Date
 
 /**
  * Codec responsible for serializing and deserializing the payload of a specific [DomainEvent]
@@ -20,14 +18,14 @@ import java.util.Date
  */
 interface EventPayloadCodec<E : DomainEvent> {
     /**
-     * The [DomainEvent.eventType] discriminator this codec handles (e.g.
-     * "EmailNotificationCreatedEvent").
+     * The event type discriminator this codec handles (e.g. "EmailNotificationCreatedEvent"). Must
+     * match the simple class name of the corresponding [DomainEvent] subtype.
      */
     val eventType: String
 
     /**
      * Serializes the event-specific fields of [event] into a [Map] that will be written as JSON.
-     * Common envelope fields (id, aggregateId, version, occurredAt) are excluded — they are stored
+     * Envelope fields (aggregateId, version, occurredAt, etc.) are excluded — they are stored
      * separately in the [EventRecord] columns.
      *
      * @param event The domain event to serialize.
@@ -36,27 +34,17 @@ interface EventPayloadCodec<E : DomainEvent> {
     fun serialize(event: E): Map<String, Any?>
 
     /**
-     * Reconstructs an [E] from the envelope fields and the [data] map that was previously produced
-     * by [serialize].
+     * Reconstructs an [E] from the [data] map that was previously produced by [serialize]. Envelope
+     * fields (aggregateId, version, occurredAt, etc.) are handled by [DomainEventSerde].
      *
-     * @param eventId Restored event id.
-     * @param aggregateId Restored aggregate id.
-     * @param version Restored aggregate version.
-     * @param occurredAt Restored timestamp.
-     * @param data Deserialized JSON payload.
+     * @param data Deserialized JSON payload map.
      * @return Either a [BaseError] if reconstruction fails, or the restored event.
      */
-    fun deserialize(
-        eventId: EntityId,
-        aggregateId: EntityId,
-        version: Int,
-        occurredAt: Date,
-        data: Map<String, Any>,
-    ): Either<BaseError, E>
+    fun deserialize(data: Map<String, Any>): Either<BaseError, E>
 }
 
 /**
- * Registry that maps [DomainEvent.eventType] discriminators to their [EventPayloadCodec].
+ * Registry that maps event type discriminators to their [EventPayloadCodec].
  *
  * Call [register] once per codec (typically at application startup or in a companion object init
  * block) and then use [codecFor] inside [DomainEventSerde] to resolve the right codec at runtime.
@@ -78,15 +66,15 @@ class EventPayloadCodecRegistry {
     /**
      * Returns the codec registered for [eventType], or `null` if none has been registered.
      *
-     * @param eventType The [DomainEvent.eventType] discriminator string.
+     * @param eventType The event type discriminator string.
      */
     @Suppress("UNCHECKED_CAST")
     fun <E : DomainEvent> codecFor(eventType: String): EventPayloadCodec<E>? =
         codecs[eventType] as? EventPayloadCodec<E>
 
     /**
-     * Serializes [event] using the codec registered for [event]'s [DomainEvent.eventType] and then
-     * writes the result to JSON via [objectMapper].
+     * Serializes [event] using the codec registered for [event]'s class simple name and then writes
+     * the result to JSON via [objectMapper].
      *
      * @param event The domain event to serialize.
      * @param objectMapper Jackson mapper used to write the payload map as a JSON string.
@@ -97,14 +85,16 @@ class EventPayloadCodecRegistry {
         event: DomainEvent,
         objectMapper: ObjectMapper,
     ): Either<BaseError, String> {
+        val eventType = event::class.simpleName ?: ""
+
         @Suppress("UNCHECKED_CAST")
         val codec =
-            codecs[event.eventType] as? EventPayloadCodec<DomainEvent>
+            codecs[eventType] as? EventPayloadCodec<DomainEvent>
                 ?: return PersistenceError(
-                    "No codec registered for event type: ${event.eventType}",
+                    "No codec registered for event type: $eventType",
                 ).left()
         return Either.catch { objectMapper.writeValueAsString(codec.serialize(event)) }.mapLeft {
-            PersistenceError("Failed to serialize event: ${event.eventType}", it)
+            PersistenceError("Failed to serialize event: $eventType", it)
         }
     }
 }

@@ -50,7 +50,7 @@ class EmailNotificationRecordConverter : NotificationRecordConverter<EmailNotifi
                 to = to,
                 subject = subject,
                 isNew = false,
-            ).also { it.version = record.version }
+            )
         }
 
     companion object {

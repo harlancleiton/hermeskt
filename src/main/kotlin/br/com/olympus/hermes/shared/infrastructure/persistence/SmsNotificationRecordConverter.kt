@@ -46,7 +46,7 @@ class SmsNotificationRecordConverter : NotificationRecordConverter<SmsNotificati
                 from = fromShortCode,
                 to = to,
                 isNew = false,
-            ).also { it.version = record.version }
+            )
         }
 
     companion object {

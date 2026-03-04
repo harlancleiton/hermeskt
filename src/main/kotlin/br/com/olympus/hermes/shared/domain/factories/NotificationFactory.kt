@@ -2,7 +2,7 @@ package br.com.olympus.hermes.shared.domain.factories
 
 import arrow.core.Either
 import br.com.olympus.hermes.shared.domain.entities.Notification
-import br.com.olympus.hermes.shared.domain.events.DomainEvent
+import br.com.olympus.hermes.shared.domain.events.EventWrapper
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.ValidationErrors
 
@@ -29,8 +29,9 @@ interface NotificationFactory<T : Notification> {
      * Reconstitutes a notification entity from its event history (Event Sourcing pattern).
      * Validates that the event history is valid and contains all required events.
      *
-     * @param events The list of domain events representing the entity's history. Must not be empty.
+     * @param events The list of event envelopes representing the entity's history. Must not be
+     * empty.
      * @return Either a BaseError (Left) or the reconstituted notification (Right).
      */
-    fun reconstitute(events: List<DomainEvent>): Either<BaseError, T>
+    fun reconstitute(events: List<EventWrapper>): Either<BaseError, T>
 }

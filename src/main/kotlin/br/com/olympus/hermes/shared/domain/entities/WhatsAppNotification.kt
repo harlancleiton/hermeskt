@@ -42,15 +42,11 @@ class WhatsAppNotification(
         if (isNew) {
             applyChange(
                 WhatsAppNotificationCreatedEvent(
-                    EntityId.generate(),
-                    id,
-                    version,
-                    createdAt,
-                    content,
-                    payload,
-                    from,
-                    to,
-                    templateName,
+                    content = content,
+                    payload = payload,
+                    from = from,
+                    to = to,
+                    templateName = templateName,
                 ),
             )
         }

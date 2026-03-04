@@ -34,14 +34,10 @@ class SmsNotification(
         if (isNew) {
             applyChange(
                 SMSNotificationCreatedEvent(
-                    EntityId.generate(),
-                    id,
-                    version,
-                    createdAt,
-                    content,
-                    payload,
-                    from,
-                    to,
+                    content = content,
+                    payload = payload,
+                    from = from,
+                    to = to,
                 ),
             )
         }

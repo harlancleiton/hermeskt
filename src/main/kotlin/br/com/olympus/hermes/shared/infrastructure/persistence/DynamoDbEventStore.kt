@@ -4,7 +4,7 @@ import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.right
 import br.com.olympus.hermes.shared.config.EventStoreTable
-import br.com.olympus.hermes.shared.domain.events.DomainEvent
+import br.com.olympus.hermes.shared.domain.events.EventWrapper
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.PersistenceError
 import br.com.olympus.hermes.shared.domain.repositories.EventStore
@@ -40,7 +40,7 @@ class DynamoDbEventStore
     ) : EventStore {
         override fun append(
             aggregateId: EntityId,
-            events: List<DomainEvent>,
+            events: List<EventWrapper>,
             expectedVersion: Int,
         ): Either<BaseError, Unit> {
             if (events.isEmpty()) return Unit.right()
@@ -48,9 +48,8 @@ class DynamoDbEventStore
             val tableName = table.tableName()
             return either {
                 val items =
-                    events.mapIndexed { index, event ->
-                        val version = expectedVersion + index
-                        val record = toRecord(event, version).bind()
+                    events.map { envelope ->
+                        val record = toRecord(envelope).bind()
                         TransactWriteItem
                             .builder()
                             .put(
@@ -81,7 +80,7 @@ class DynamoDbEventStore
             }
         }
 
-        override fun getEvents(aggregateId: EntityId): Either<BaseError, List<DomainEvent>> {
+        override fun getEvents(aggregateId: EntityId): Either<BaseError, List<EventWrapper>> {
             val condition =
                 QueryConditional.keyEqualTo(
                     Key.builder().partitionValue(aggregateId.value.toString()).build(),
@@ -89,7 +88,7 @@ class DynamoDbEventStore
             return queryAndDeserialize(condition)
         }
 
-        private fun queryAndDeserialize(condition: QueryConditional): Either<BaseError, List<DomainEvent>> =
+        private fun queryAndDeserialize(condition: QueryConditional): Either<BaseError, List<EventWrapper>> =
             either {
                 val records =
                     Either
@@ -100,24 +99,21 @@ class DynamoDbEventStore
                 records.map { record -> fromRecord(record).bind() }
             }
 
-        private fun toRecord(
-            event: DomainEvent,
-            version: Int,
-        ): Either<BaseError, EventRecord> =
+        private fun toRecord(envelope: EventWrapper): Either<BaseError, EventRecord> =
             either {
                 val record = EventRecord()
-                record.pk = event.aggregateId.value.toString()
-                record.sk = EventRecord.sortKey(version)
-                record.eventId = event.id.value.toString()
-                record.eventType = event.eventType
-                record.aggregateType = event.aggregateType
-                record.data = serde.serialize(event).bind()
-                record.occurredAt = event.occurredAt.time
-                record.version = version
+                record.pk = envelope.aggregateId.value.toString()
+                record.sk = EventRecord.sortKey(envelope.aggregateVersion)
+                record.eventId = envelope.eventId.value.toString()
+                record.eventType = envelope.eventType
+                record.aggregateType = envelope.aggregateType
+                record.data = serde.serialize(envelope.payload).bind()
+                record.occurredAt = envelope.occurredAt.time
+                record.version = envelope.aggregateVersion
                 record
             }
 
-        private fun fromRecord(record: EventRecord): Either<BaseError, DomainEvent> =
+        private fun fromRecord(record: EventRecord): Either<BaseError, EventWrapper> =
             either {
                 val eventId = EntityId.from(record.eventId).bind()
                 val aggregateId = EntityId.from(record.pk).bind()
@@ -126,6 +122,7 @@ class DynamoDbEventStore
                         eventType = record.eventType,
                         eventId = eventId,
                         aggregateId = aggregateId,
+                        aggregateType = record.aggregateType,
                         version = record.version,
                         occurredAt = Date(record.occurredAt),
                         json = record.data,
