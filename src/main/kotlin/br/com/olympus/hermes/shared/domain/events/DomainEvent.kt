@@ -60,3 +60,14 @@ data class WhatsAppNotificationCreatedEvent(
 ) : NotificationCreatedEvent {
     override val type = NotificationType.WHATSAPP
 }
+
+data class PushNotificationCreatedEvent(
+    override val aggregateId: String,
+    override val content: String,
+    override val payload: Map<String, Any>,
+    val deviceToken: br.com.olympus.hermes.shared.domain.valueobjects.DeviceToken,
+    val title: String,
+    val data: Map<String, String>,
+) : NotificationCreatedEvent {
+    override val type = NotificationType.PUSH
+}

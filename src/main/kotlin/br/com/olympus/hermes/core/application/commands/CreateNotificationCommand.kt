@@ -75,6 +75,26 @@ sealed interface CreateNotificationCommand : Command {
         val to: String,
     ) : CreateNotificationCommand
 
+    /**
+     * Command for creating a push notification.
+     *
+     * @property content The notification body content.
+     * @property payload Additional metadata for template rendering.
+     * @property deviceToken The recipient's device token (raw string, validated in the handler).
+     * @property title The notification title (raw string, validated in the handler).
+     * @property data Custom key-value pairs for the push payload.
+     */
+    data class Push(
+        override val id: String = UUID.randomUUID().toString(),
+        override val type: NotificationType = NotificationType.PUSH,
+        override val content: String,
+        override val payload: Map<String, Any> = emptyMap(),
+        override val templateName: String? = null,
+        val deviceToken: String,
+        val title: String,
+        val data: Map<String, String> = emptyMap(),
+    ) : CreateNotificationCommand
+
     fun toInput(): CreateNotificationInput =
         when (this) {
             is CreateNotificationCommand.Email ->
@@ -102,6 +122,15 @@ sealed interface CreateNotificationCommand : Command {
                     from = from,
                     to = to,
                     templateName = templateName ?: "",
+                )
+            is CreateNotificationCommand.Push ->
+                CreateNotificationInput.Push(
+                    id = id,
+                    content = content,
+                    payload = payload,
+                    deviceToken = deviceToken,
+                    title = title,
+                    data = data,
                 )
         }
 }

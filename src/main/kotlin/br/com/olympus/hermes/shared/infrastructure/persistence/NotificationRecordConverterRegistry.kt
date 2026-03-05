@@ -16,7 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped
 @ApplicationScoped
 class NotificationRecordConverterRegistry {
     private val converters =
-        listOf(EmailNotificationRecordConverter(), SmsNotificationRecordConverter())
+        listOf(EmailNotificationRecordConverter(), SmsNotificationRecordConverter(), PushNotificationRecordConverter())
 
     private val byType = converters.associateBy { it.type }
 

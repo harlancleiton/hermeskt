@@ -6,11 +6,13 @@ import br.com.olympus.hermes.shared.domain.events.EmailNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.NotificationDeliveredEvent
 import br.com.olympus.hermes.shared.domain.events.NotificationSeenEvent
 import br.com.olympus.hermes.shared.domain.events.NotificationSentEvent
+import br.com.olympus.hermes.shared.domain.events.PushNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.SMSNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.WhatsAppNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.PersistenceError
 import br.com.olympus.hermes.shared.domain.valueobjects.BrazilianPhone
+import br.com.olympus.hermes.shared.domain.valueobjects.DeviceToken
 import br.com.olympus.hermes.shared.domain.valueobjects.Email
 import br.com.olympus.hermes.shared.domain.valueobjects.EmailSubject
 import java.util.Date
@@ -44,6 +46,37 @@ object EmailNotificationCreatedCodec : EventPayloadCodec<EmailNotificationCreate
                 from = from,
                 to = to,
                 subject = subject,
+            )
+        }
+}
+
+/** [EventPayloadCodec] for [PushNotificationCreatedEvent]. */
+object PushNotificationCreatedCodec : EventPayloadCodec<PushNotificationCreatedEvent> {
+    override val eventType = "PushNotificationCreatedEvent"
+
+    override fun serialize(event: PushNotificationCreatedEvent): Map<String, Any?> =
+        mapOf(
+            "content" to event.content,
+            "payload" to event.payload,
+            "deviceToken" to event.deviceToken.value,
+            "title" to event.title,
+            "data" to event.data,
+        )
+
+    @Suppress("UNCHECKED_CAST")
+    override fun deserialize(
+        data: Map<String, Any>,
+        aggregateId: String,
+    ): Either<BaseError, PushNotificationCreatedEvent> =
+        either {
+            val deviceToken = DeviceToken.create(data["deviceToken"] as String).bind()
+            PushNotificationCreatedEvent(
+                aggregateId = aggregateId,
+                content = data["content"] as String,
+                payload = (data["payload"] as? Map<String, Any>) ?: emptyMap(),
+                deviceToken = deviceToken,
+                title = data["title"] as String,
+                data = (data["data"] as? Map<String, String>) ?: emptyMap(),
             )
         }
 }
@@ -195,6 +228,7 @@ fun defaultEventPayloadCodecRegistry(): EventPayloadCodecRegistry =
         register(EmailNotificationCreatedCodec)
         register(SMSNotificationCreatedCodec)
         register(WhatsAppNotificationCreatedCodec)
+        register(PushNotificationCreatedCodec)
         register(NotificationSentCodec)
         register(NotificationSeenCodec)
         register(NotificationDeliveredCodec)

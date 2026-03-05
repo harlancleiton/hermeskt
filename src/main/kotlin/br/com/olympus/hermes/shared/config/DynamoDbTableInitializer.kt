@@ -6,7 +6,11 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.event.Observes
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import software.amazon.awssdk.services.dynamodb.model.*
+import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement
+import software.amazon.awssdk.services.dynamodb.model.KeyType
+import software.amazon.awssdk.services.dynamodb.model.ResourceInUseException
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 
 @ApplicationScoped
 class DynamoDbTableInitializer(
@@ -17,7 +21,7 @@ class DynamoDbTableInitializer(
     fun onStart(
         @Observes ev: StartupEvent,
     ) {
-        if (profile != "dev") {
+        if (profile != "dev" && profile != "test") {
             Log.info("Skipping DynamoDB table initialization (profile: $profile)")
             return
         }

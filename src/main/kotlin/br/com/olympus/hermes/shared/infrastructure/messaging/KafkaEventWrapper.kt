@@ -4,9 +4,11 @@ import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import br.com.olympus.hermes.shared.domain.events.EmailNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.EventWrapper
 import br.com.olympus.hermes.shared.domain.events.NotificationCreatedEvent
+import br.com.olympus.hermes.shared.domain.events.PushNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.SMSNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.WhatsAppNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.valueobjects.BrazilianPhone
+import br.com.olympus.hermes.shared.domain.valueobjects.DeviceToken
 import br.com.olympus.hermes.shared.domain.valueobjects.Email
 import br.com.olympus.hermes.shared.domain.valueobjects.EmailSubject
 import java.util.Date
@@ -106,6 +108,24 @@ data class KafkaEventWrapper(
                         templateName = templateName,
                     )
                 }
+                "PushNotificationCreatedEvent" -> {
+                    val deviceToken =
+                        DeviceToken.create(p["deviceToken"] as? String ?: return null).getOrNull() ?: return null
+                    val title = p["title"] as? String ?: return null
+
+                    @Suppress("UNCHECKED_CAST")
+                    val data =
+                        (p["data"] as? Map<*, *>)?.mapKeys { it.key as String }?.mapValues { it.value as String }
+                            ?: emptyMap()
+                    PushNotificationCreatedEvent(
+                        aggregateId = aggregateId,
+                        content = content,
+                        payload = eventPayload,
+                        deviceToken = deviceToken,
+                        title = title,
+                        data = data,
+                    )
+                }
                 else -> null
             }
         }
@@ -140,6 +160,15 @@ private fun DomainEvent.toMap(aggregateId: String = ""): Map<String, Any?> =
                 "from" to from.value,
                 "to" to to.value,
                 "templateName" to templateName,
+            )
+        is PushNotificationCreatedEvent ->
+            mapOf(
+                "aggregateId" to aggregateId,
+                "content" to content,
+                "payload" to payload,
+                "deviceToken" to deviceToken.value,
+                "title" to title,
+                "data" to data,
             )
         else -> emptyMap()
     }

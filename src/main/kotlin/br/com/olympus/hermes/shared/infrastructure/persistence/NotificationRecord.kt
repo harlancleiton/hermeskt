@@ -81,6 +81,16 @@ class NotificationRecord {
     @get:DynamoDbAttribute("templateName")
     var templateName: String? = null
 
+    // Push-specific
+    @get:DynamoDbAttribute("deviceToken")
+    var deviceToken: String? = null
+
+    @get:DynamoDbAttribute("title")
+    var title: String? = null
+
+    @get:DynamoDbAttribute("data")
+    var data: String? = null
+
     override fun toString(): String =
         StringBuilder()
             .appendLine("pk: $pk")

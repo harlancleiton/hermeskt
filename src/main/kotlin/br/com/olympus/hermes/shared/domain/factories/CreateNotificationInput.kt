@@ -61,4 +61,22 @@ sealed interface CreateNotificationInput {
         val to: String,
         val templateName: String,
     ) : CreateNotificationInput
+
+    /**
+     * Raw input data for creating a push notification.
+     *
+     * @property content The notification body content (validated for non-blank).
+     * @property payload Additional metadata for template parameter rendering.
+     * @property deviceToken The recipient's device token (raw string, validated by the factory).
+     * @property title The notification title (validated for non-blank).
+     * @property data Custom key-value pairs for the push payload.
+     */
+    data class Push(
+        override val id: String,
+        override val content: String,
+        override val payload: Map<String, Any> = emptyMap(),
+        val deviceToken: String,
+        val title: String,
+        val data: Map<String, String> = emptyMap(),
+    ) : CreateNotificationInput
 }

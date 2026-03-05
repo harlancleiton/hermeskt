@@ -73,6 +73,15 @@ data class InvalidNotificationInputError(
 // Value Object Errors
 // ========================================
 
+data class InvalidDeviceTokenError(
+    val value: String,
+) : ClientError {
+    override val message = "The provided value '$value' is not a valid device token."
+
+    override val cause: Throwable?
+        get() = null
+}
+
 data class InvalidEmailError(
     val value: String,
 ) : ClientError {

@@ -46,6 +46,14 @@ class NotificationView : PanacheMongoEntityBase() {
     @BsonProperty("templateName")
     var templateName: String? = null
 
+    /** Device token for Push notifications. Null for other generic notifications. */
+    @BsonProperty("deviceToken")
+    var deviceToken: String? = null
+
+    /** Push notification title. Null for other generic notifications. */
+    @BsonProperty("title")
+    var title: String? = null
+
     /** Timestamp when the notification was created. */
     @BsonProperty("createdAt")
     var createdAt: Date = Date()

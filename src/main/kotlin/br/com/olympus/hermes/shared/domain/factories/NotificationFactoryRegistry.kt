@@ -22,6 +22,7 @@ class NotificationFactoryRegistry {
         register(NotificationType.EMAIL, EmailNotificationFactory())
         register(NotificationType.SMS, SmsNotificationFactory())
         register(NotificationType.WHATSAPP, WhatsAppNotificationFactory())
+        register(NotificationType.PUSH, PushNotificationFactory())
     }
 
     /**
