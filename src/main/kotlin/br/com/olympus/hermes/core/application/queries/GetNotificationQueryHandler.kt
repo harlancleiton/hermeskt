@@ -8,6 +8,9 @@ import br.com.olympus.hermes.shared.domain.exceptions.InvalidUUIDError
 import br.com.olympus.hermes.shared.domain.repositories.NotificationViewRepository
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import br.com.olympus.hermes.shared.infrastructure.readmodel.NotificationView
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.instrumentation.annotations.WithSpan
+import io.quarkus.logging.Log
 import jakarta.enterprise.context.ApplicationScoped
 
 /**
@@ -25,9 +28,14 @@ class GetNotificationQueryHandler(
      * @return Either a [BaseError] on failure, or the [NotificationView] if found (null if not
      * found).
      */
+    @WithSpan("notification.query.get")
     override fun handle(query: GetNotificationQuery): Either<BaseError, NotificationView?> =
         either {
+            Span.current().setAttribute("notification.id", query.id)
+            Log.debugf("Querying notification id=%s", query.id)
             val id = EntityId.from(query.id).mapLeft { InvalidUUIDError(query.id, null) }.bind()
-            viewRepository.findById(id).bind()
+            val view = viewRepository.findById(id).bind()
+            Span.current().setAttribute("notification.found", view != null)
+            view
         }
 }
