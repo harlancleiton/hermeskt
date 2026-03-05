@@ -411,7 +411,7 @@ Span.current().apply {
 
 ## Best Practices
 
-1. **Use @WithSpan for simple cases** - cleaner and less boilerplate
+1. **Use @WithSpan for simple cases** - cleaner and less boilerplate. Apply it only to public entrypoints (e.g. command/query handlers, projectors). **Do not annotate private helper methods**; instead rely on attributes/logs inside the parent span to avoid fragmenting traces.
 2. **Manual spans for complex flows** - when you need fine-grained control
 3. **Enhance auto-spans** - add business attributes to HTTP/DB spans
 4. **Structured logs** - use key=value format for better parsing
