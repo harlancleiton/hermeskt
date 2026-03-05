@@ -106,25 +106,31 @@ src/main/kotlin/br/com/olympus/hermes/
 #### Write Side (Commands)
 
 - Commands implement marker `interface Command`.
-- Handlers implement `CommandHandler<C : Command, R>` with `fun handle(command: C): Either<BaseError, R>`.
+- Handlers implement `CommandHandler<C : Command>` with `fun handle(command: C): Either<BaseError, Unit>`. **Commands never return data** (CQS pure).
+- The caller (controller) pre-assigns the aggregate ID on the command (e.g. `id: String = UUID.randomUUID().toString()`). This allows the controller to query the read model after the command without needing a return value.
 - After persisting events to DynamoDB, the handler calls `aggregate.commit()`, which triggers Kafka publishing via `DomainEventPublisher`.
 - Name files as `{Action}{Entity}Command.kt` and `{Action}{Entity}Handler.kt`.
+- Annotate handlers with `@WithSpan("{aggregate}.command.{action}")` and set key span attributes (`notification.id`, `notification.type`) at the top of `handle()`. Use `Log.info` on entry and on success.
 
 #### Read Side (Queries)
 
 - Queries implement marker `interface Query<R>`.
 - Handlers implement `QueryHandler<Q : Query<R>, R>` with `fun handle(query: Q): Either<BaseError, R>`.
 - Queries read exclusively from MongoDB view collections (`*View` documents). **Never** read from DynamoDB in a query handler.
+- After a command, the controller performs a `GetXxxQuery` using the pre-assigned command ID to retrieve the newly created resource for the HTTP response.
 - Name files as `{Criteria}{Entity}Query.kt` and `{Criteria}{Entity}QueryHandler.kt`.
+- Annotate handlers with `@WithSpan("{aggregate}.query.{criteria}")` and set `{aggregate}.id` + `{aggregate}.found` attributes. Use `Log.debug` for query entry.
 
 #### Event Handlers (Projectors)
 
-- Event handlers listen to Kafka topics and project `DomainEvent`s into MongoDB read-model documents.
-- Implement `EventHandler<E : DomainEvent>` with `fun handle(event: E): Either<BaseError, Unit>`.
-- Each handler is responsible for creating/updating a single `*View` document type.
-- Annotate Kafka consumer methods with `@Incoming("<topic>")` (SmallRye Reactive Messaging).
-- Name files as `{Entity}{EventType}EventHandler.kt`, placed under `core/application/eventhandlers/`.
-- Event handlers must be **idempotent** — re-processing the same event must produce the same state.
+- Projectors are **split into two layers**:
+    - **Application projector** (`core/application/projectors/`): pure business logic. Implements `EventHandler<E : DomainEvent>` with `fun handle(event: E): Either<BaseError, Unit>`. No Kafka or infrastructure dependencies.
+    - **Infrastructure consumer** (`infrastructure/kafka/consumers/`): thin `@Incoming` adapter that deserialises the Kafka message and delegates to the projector. Annotated with `@Blocking`.
+- Each projector is responsible for creating/updating a single `*View` document type.
+- Name projectors as `{Entity}{EventType}Projector.kt` (e.g. `NotificationCreatedProjector`).
+- Name consumers as `{Entity}{EventType}Consumer.kt` (e.g. `NotificationCreatedConsumer`).
+- Projectors must be **idempotent** — re-processing the same event produces the same state. Use the `event.aggregateId` as the MongoDB document ID.
+- Annotate projectors with `@WithSpan("{aggregate}.projector.apply")` and set `{aggregate}.id`, `{aggregate}.type`, and `{aggregate}.view.upserted` attributes. Use `Log.info` for projection entry and success.
 
 #### NotificationView (Read Model)
 
@@ -178,13 +184,14 @@ src/main/kotlin/br/com/olympus/hermes/
 
 ## Generation Rules
 
-1. **New notification type**: create entity in `entities/`, factory in `factories/`, created-event in `events/`, register in `NotificationFactoryRegistry.init`, add record converter in `persistence/`, add view document + projector in `readmodel/` + `eventhandlers/`.
-2. **New command**: create `Command` data class + `CommandHandler` implementation in `core/application/commands/`; handler must call `aggregate.commit()` after persisting to DynamoDB.
-3. **New query**: create `Query<R>` data class + `QueryHandler` implementation in `core/application/queries/`; read exclusively from MongoDB.
-4. **New event handler**: create `EventHandler` in `core/application/eventhandlers/`; annotate Kafka consumer with `@Incoming`; update the corresponding `*View` document in MongoDB; ensure idempotency.
+1. **New notification type**: create entity in `entities/`, factory in `factories/`, created-event in `events/`, register in `NotificationFactoryRegistry.init`, add record converter in `persistence/`, add view document + projector in `readmodel/` + `projectors/`, add Kafka consumer in `infrastructure/kafka/consumers/`.
+2. **New command**: create `Command` data class (with `id: String = UUID.randomUUID().toString()`) + `CommandHandler<C>` implementation returning `Either<BaseError, Unit>` in `core/application/commands/`; handler must call `aggregate.commit()` after persisting to DynamoDB. Annotate with `@WithSpan`.
+3. **New query**: create `Query<R>` data class + `QueryHandler` implementation in `core/application/queries/`; read exclusively from MongoDB. Annotate with `@WithSpan`.
+4. **New projector**: create `EventHandler` in `core/application/projectors/` (no Kafka deps); create thin `@Incoming` consumer in `infrastructure/kafka/consumers/` that delegates to the projector; update the corresponding `*View` document in MongoDB; use `event.aggregateId` as document ID; ensure idempotency. Annotate projector with `@WithSpan`.
 5. **New value object**: use `@JvmInline value class` with private constructor, companion factory returning `Either`, and corresponding error type in `BaseError.kt`.
 6. **New repository port**: define interface in `domain/repositories/`, implement in `infrastructure/persistence/` (write) or `infrastructure/readmodel/` (read).
 7. **New error type**: add as `data class` implementing `ClientError` or `ServerError` in `BaseError.kt`, in the appropriate section.
 8. **Never** add infrastructure dependencies (AWS SDK, MongoDB, Kafka, Quarkus, Jakarta) to domain layer code.
 9. **Always** run `./mvnw compile` to verify changes compile before considering a task done.
 10. **Always** run `./mvnw ktlint:format` to format code before considering a task done.
+11. **Clarification**: You can use "clarification" whenever necessary in cases of doubts, divergences, or possibilities for improvement.
