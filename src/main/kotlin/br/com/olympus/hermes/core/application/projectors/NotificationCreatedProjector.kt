@@ -26,7 +26,7 @@ import java.util.Date
  */
 @ApplicationScoped
 class NotificationCreatedProjector(
-    private val viewRepository: NotificationViewRepository,
+        private val viewRepository: NotificationViewRepository,
 ) : EventHandler<NotificationCreatedEvent> {
     /**
      * Projects a [NotificationCreatedEvent] into a [NotificationView] document in MongoDB.
@@ -35,56 +35,54 @@ class NotificationCreatedProjector(
      * @return Either a [BaseError] on failure or [Unit] on success.
      */
     @WithSpan("notification.projector.apply")
-    override fun handle(event: NotificationCreatedEvent): Either<BaseError, Unit> =
-        either {
-            Span.current().apply {
-                setAttribute("notification.id", event.aggregateId)
-                setAttribute("notification.type", event.type.name)
-            }
-            Log.info(
-                "Projecting notification event aggregate=${event.aggregateId}" +
-                    " type=${event.type}",
-            )
-            val view = toView(event).bind()
-            viewRepository.upsert(view).bind()
-            Span.current().setAttribute("notification.view.upserted", true)
+    override fun handle(event: NotificationCreatedEvent): Either<BaseError, Unit> = either {
+        Span.current().apply {
+            setAttribute("notification.id", event.aggregateId)
+            setAttribute("notification.type", event.type.name)
         }
+        Log.info(
+                "Projecting notification event aggregate=${event.aggregateId}" +
+                        " type=${event.type}",
+        )
+        val view = toView(event).bind()
+        viewRepository.upsert(view).bind()
+        Span.current().setAttribute("notification.view.upserted", true)
+    }
 
-    @WithSpan("notification.projector.map-view")
     private fun toView(event: NotificationCreatedEvent): Either<BaseError, NotificationView> =
-        either {
-            val now = Date()
-            val view = NotificationView()
-            view.id = event.aggregateId
-            view.type = event.type.name
-            view.content = event.content
-            view.payload = event.payload
-            view.createdAt = now
-            view.updatedAt = now
+            either {
+                val now = Date()
+                val view = NotificationView()
+                view.id = event.aggregateId
+                view.type = event.type.name
+                view.content = event.content
+                view.payload = event.payload
+                view.createdAt = now
+                view.updatedAt = now
 
-            when (event) {
-                is EmailNotificationCreatedEvent -> {
-                    view.from = event.from.value
-                    view.to = event.to.value
-                    view.subject = event.subject.subject
-                    Span.current().setAttribute("notification.channel", "EMAIL")
-                }
-                is SMSNotificationCreatedEvent -> {
-                    view.from = event.from.toString()
-                    view.to = event.to.value
-                    Span.current().setAttribute("notification.channel", "SMS")
-                }
-                is WhatsAppNotificationCreatedEvent -> {
-                    view.from = event.from.value
-                    view.to = event.to.value
-                    view.templateName = event.templateName
-                    Span.current().apply {
-                        setAttribute("notification.channel", "WHATSAPP")
-                        setAttribute("notification.template.name", event.templateName)
+                when (event) {
+                    is EmailNotificationCreatedEvent -> {
+                        view.from = event.from.value
+                        view.to = event.to.value
+                        view.subject = event.subject.subject
+                        Span.current().setAttribute("notification.channel", "EMAIL")
+                    }
+                    is SMSNotificationCreatedEvent -> {
+                        view.from = event.from.toString()
+                        view.to = event.to.value
+                        Span.current().setAttribute("notification.channel", "SMS")
+                    }
+                    is WhatsAppNotificationCreatedEvent -> {
+                        view.from = event.from.value
+                        view.to = event.to.value
+                        view.templateName = event.templateName
+                        Span.current().apply {
+                            setAttribute("notification.channel", "WHATSAPP")
+                            setAttribute("notification.template.name", event.templateName)
+                        }
                     }
                 }
-            }
 
-            view
-        }
+                view
+            }
 }
