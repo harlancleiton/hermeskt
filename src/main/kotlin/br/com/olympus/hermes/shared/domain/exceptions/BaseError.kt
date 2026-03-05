@@ -127,6 +127,18 @@ data class InvalidPayloadError(
     override val message: String = "Invalid payload: $reason"
 }
 
+data class InvalidTemplateNameError(
+    val value: String,
+) : ClientError {
+    override val message: String = "The provided template name '$value' is not valid."
+}
+
+data class InvalidTemplateBodyError(
+    val reason: String,
+) : ClientError {
+    override val message: String = "The provided template body is not valid: $reason"
+}
+
 /**
  * Error indicating that a factory for the requested notification type was not found.
  *
@@ -171,6 +183,26 @@ data class MissingCreationEventError(
 ) : ServerError {
     override val message: String = "Event history must contain $expectedEventType"
     override val cause: Throwable? = null
+}
+
+data class TemplateNotFoundError(
+    val name: String,
+    val channel: String,
+) : ClientError {
+    override val message: String = "Template '$name' for channel '$channel' was not found."
+}
+
+data class TemplateDuplicateError(
+    val name: String,
+    val channel: String,
+) : ClientError {
+    override val message: String = "Template '$name' for channel '$channel' already exists."
+}
+
+data class MissingTemplateVariablesError(
+    val missing: List<String>,
+) : ClientError {
+    override val message: String = "Missing template variables: ${missing.joinToString(", ")}"
 }
 
 // ========================================

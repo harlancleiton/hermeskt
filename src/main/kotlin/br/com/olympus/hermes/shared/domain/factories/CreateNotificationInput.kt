@@ -6,6 +6,7 @@ package br.com.olympus.hermes.shared.domain.factories
  * by the corresponding [NotificationFactory].
  */
 sealed interface CreateNotificationInput {
+    val id: String
     val content: String
     val payload: Map<String, Any>
 
@@ -19,6 +20,7 @@ sealed interface CreateNotificationInput {
      * @property subject The email subject line (raw string, validated by the factory).
      */
     data class Email(
+        override val id: String,
         override val content: String,
         override val payload: Map<String, Any> = emptyMap(),
         val from: String,
@@ -35,6 +37,7 @@ sealed interface CreateNotificationInput {
      * @property to The recipient's phone number (raw string, validated by the factory).
      */
     data class Sms(
+        override val id: String,
         override val content: String,
         override val payload: Map<String, Any> = emptyMap(),
         val from: UInt,
@@ -46,13 +49,12 @@ sealed interface CreateNotificationInput {
      *
      * @property content The message body content (validated for non-blank).
      * @property payload Additional metadata for template parameter rendering.
-     * @property from The sender's Brazilian phone number (raw string, validated by the
-     * factory).
-     * @property to The recipient's Brazilian phone number (raw string, validated by the
-     * factory).
+     * @property from The sender's Brazilian phone number (raw string, validated by the factory).
+     * @property to The recipient's Brazilian phone number (raw string, validated by the factory).
      * @property templateName The WhatsApp Business API template name (validated for non-blank).
      */
     data class WhatsApp(
+        override val id: String,
         override val content: String,
         override val payload: Map<String, Any> = emptyMap(),
         val from: String,

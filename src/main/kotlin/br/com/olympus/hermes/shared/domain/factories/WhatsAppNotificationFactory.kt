@@ -48,6 +48,7 @@ class WhatsAppNotificationFactory : NotificationFactory<WhatsAppNotification> {
 
         return either<NonEmptyList<BaseError>, WhatsAppNotification> {
             zipOrAccumulate(
+                { EntityId.from(input.id).bind() },
                 { ensure(input.content.isNotBlank()) { EmptyContentError("content") } },
                 { BrazilianPhone.create(input.from).bind() },
                 { BrazilianPhone.create(input.to).bind() },
@@ -56,7 +57,7 @@ class WhatsAppNotificationFactory : NotificationFactory<WhatsAppNotification> {
                         EmptyContentError("templateName")
                     }
                 },
-            ) { _, from, to, _ ->
+            ) { id, _, from, to, _ ->
                 val now = Date()
                 WhatsAppNotification(
                     content = input.content,
@@ -65,7 +66,7 @@ class WhatsAppNotificationFactory : NotificationFactory<WhatsAppNotification> {
                     sentAt = null,
                     deliveryAt = null,
                     seenAt = null,
-                    id = EntityId.generate(),
+                    id = id,
                     createdAt = now,
                     updatedAt = now,
                     from = from,

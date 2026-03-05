@@ -3,6 +3,7 @@ package br.com.olympus.hermes.core.application.commands
 import br.com.olympus.hermes.shared.application.cqrs.Command
 import br.com.olympus.hermes.shared.domain.factories.CreateNotificationInput
 import br.com.olympus.hermes.shared.domain.factories.NotificationType
+import java.util.UUID
 
 /**
  * Sealed interface representing commands for creating notifications. Each subtype carries the
@@ -10,9 +11,11 @@ import br.com.olympus.hermes.shared.domain.factories.NotificationType
  * value object validation happens within the handler boundary.
  */
 sealed interface CreateNotificationCommand : Command {
+    val id: String
     val type: NotificationType
     val content: String
     val payload: Map<String, Any>
+    val templateName: String?
 
     /**
      * Command for creating an email notification.
@@ -24,9 +27,11 @@ sealed interface CreateNotificationCommand : Command {
      * @property subject The email subject line (raw string, validated in the handler).
      */
     data class Email(
+        override val id: String = UUID.randomUUID().toString(),
         override val type: NotificationType = NotificationType.EMAIL,
         override val content: String,
         override val payload: Map<String, Any> = emptyMap(),
+        override val templateName: String? = null,
         val from: String,
         val to: String,
         val subject: String,
@@ -41,9 +46,11 @@ sealed interface CreateNotificationCommand : Command {
      * @property to The recipient's phone number (raw string, validated in the handler).
      */
     data class Sms(
+        override val id: String = UUID.randomUUID().toString(),
         override val type: NotificationType = NotificationType.SMS,
         override val content: String,
         override val payload: Map<String, Any> = emptyMap(),
+        override val templateName: String? = null,
         val from: UInt,
         val to: String,
     ) : CreateNotificationCommand
@@ -53,26 +60,26 @@ sealed interface CreateNotificationCommand : Command {
      *
      * @property content The message body content.
      * @property payload Additional metadata for template parameter rendering.
-     * @property from The sender's Brazilian phone number (raw string, validated in the
+     * @property from The sender's Brazilian phone number (raw string, validated in the handler).
+     * @property to The recipient's Brazilian phone number (raw string, validated in the handler).
+     * @property templateName The WhatsApp Business API template name (raw string, validated in the
      * handler).
-     * @property to The recipient's Brazilian phone number (raw string, validated in the
-     * handler).
-     * @property templateName The WhatsApp Business API template name (raw string, validated in
-     * the handler).
      */
     data class WhatsApp(
+        override val id: String = UUID.randomUUID().toString(),
         override val type: NotificationType = NotificationType.WHATSAPP,
         override val content: String,
         override val payload: Map<String, Any> = emptyMap(),
+        override val templateName: String? = null,
         val from: String,
         val to: String,
-        val templateName: String,
     ) : CreateNotificationCommand
 
     fun toInput(): CreateNotificationInput =
         when (this) {
             is CreateNotificationCommand.Email ->
                 CreateNotificationInput.Email(
+                    id = id,
                     content = content,
                     payload = payload,
                     from = from,
@@ -81,6 +88,7 @@ sealed interface CreateNotificationCommand : Command {
                 )
             is CreateNotificationCommand.Sms ->
                 CreateNotificationInput.Sms(
+                    id = id,
                     content = content,
                     payload = payload,
                     from = from,
@@ -88,11 +96,12 @@ sealed interface CreateNotificationCommand : Command {
                 )
             is CreateNotificationCommand.WhatsApp ->
                 CreateNotificationInput.WhatsApp(
+                    id = id,
                     content = content,
                     payload = payload,
                     from = from,
                     to = to,
-                    templateName = templateName,
+                    templateName = templateName ?: "",
                 )
         }
 }

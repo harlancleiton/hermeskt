@@ -48,11 +48,12 @@ class EmailNotificationFactory : NotificationFactory<EmailNotification> {
 
         return either<NonEmptyList<BaseError>, EmailNotification> {
             zipOrAccumulate(
+                { EntityId.from(input.id).bind() },
                 { ensure(input.content.isNotBlank()) { EmptyContentError("content") } },
                 { Email.from(input.from).bind() },
                 { Email.from(input.to).bind() },
                 { EmailSubject.create(input.subject).bind() },
-            ) { _, from, to, subject ->
+            ) { id, _, from, to, subject ->
                 val now = Date()
                 EmailNotification(
                     content = input.content,
@@ -61,7 +62,7 @@ class EmailNotificationFactory : NotificationFactory<EmailNotification> {
                     sentAt = null,
                     deliveryAt = null,
                     seenAt = null,
-                    id = EntityId.generate(),
+                    id = id,
                     createdAt = now,
                     updatedAt = now,
                     from = from,

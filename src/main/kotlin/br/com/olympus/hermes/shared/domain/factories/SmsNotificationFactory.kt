@@ -48,9 +48,10 @@ class SmsNotificationFactory : NotificationFactory<SmsNotification> {
 
         return either<NonEmptyList<BaseError>, SmsNotification> {
             zipOrAccumulate(
+                { EntityId.from(input.id).bind() },
                 { ensure(input.content.isNotBlank()) { EmptyContentError("content") } },
                 { BrazilianPhone.create(input.to).bind() },
-            ) { _, to ->
+            ) { id, _, to ->
                 val now = Date()
                 SmsNotification(
                     content = input.content,
@@ -59,7 +60,7 @@ class SmsNotificationFactory : NotificationFactory<SmsNotification> {
                     sentAt = null,
                     deliveryAt = null,
                     seenAt = null,
-                    id = EntityId.generate(),
+                    id = id,
                     createdAt = now,
                     updatedAt = now,
                     from = input.from,

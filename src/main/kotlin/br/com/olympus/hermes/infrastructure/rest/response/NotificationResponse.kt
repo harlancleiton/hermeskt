@@ -1,10 +1,7 @@
 package br.com.olympus.hermes.infrastructure.rest.response
 
-import br.com.olympus.hermes.shared.domain.entities.EmailNotification
-import br.com.olympus.hermes.shared.domain.entities.Notification
-import br.com.olympus.hermes.shared.domain.entities.SmsNotification
-import br.com.olympus.hermes.shared.domain.entities.WhatsAppNotification
 import br.com.olympus.hermes.shared.domain.factories.NotificationType
+import br.com.olympus.hermes.shared.infrastructure.readmodel.NotificationView
 import java.util.Date
 
 /**
@@ -23,26 +20,17 @@ data class NotificationResponse(
 ) {
     companion object {
         /**
-         * Constructs a [NotificationResponse] from a [Notification] domain entity.
+         * Constructs a [NotificationResponse] from a [NotificationView] read-model document.
          *
-         * @param notification The domain entity to convert.
+         * @param view The read-model view to convert.
          * @return The corresponding response DTO.
          */
-        fun from(notification: Notification): NotificationResponse =
+        fun from(view: NotificationView): NotificationResponse =
             NotificationResponse(
-                id = notification.id.value.toString(),
-                type =
-                    when (notification) {
-                        is EmailNotification -> NotificationType.EMAIL
-                        is SmsNotification -> NotificationType.SMS
-                        is WhatsAppNotification -> NotificationType.WHATSAPP
-                        else ->
-                            error(
-                                "Unknown notification subtype: ${notification::class.simpleName}",
-                            )
-                    },
-                createdAt = notification.createdAt,
-                updatedAt = notification.updatedAt,
+                id = view.id,
+                type = NotificationType.valueOf(view.type),
+                createdAt = view.createdAt,
+                updatedAt = view.updatedAt,
             )
     }
 }
