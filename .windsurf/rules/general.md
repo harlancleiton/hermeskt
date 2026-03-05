@@ -38,7 +38,7 @@ src/main/kotlin/br/com/olympus/hermes/
 │   └── application/
 │       ├── commands/               # Feature-specific command handlers
 │       ├── queries/                # Feature-specific query handlers
-│       └── eventhandlers/          # Feature-specific event handlers / projectors (application logic)
+│       └── projectors/             # Read-model projectors (application logic, no Kafka deps)
 ├── infrastructure/
 │   ├── kafka/
 │   │   └── consumers/             # @Incoming Kafka consumer classes (SmallRye Reactive Messaging)
