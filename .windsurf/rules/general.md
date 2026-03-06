@@ -23,45 +23,31 @@ Hermes is a **notification service** (Email, SMS) built with **Kotlin + Quarkus*
 
 ## Architecture
 
-### Hexagonal / Ports & Adapters
+### Modular Monolith & Hexagonal Architecture
 
-- **Domain layer** (`shared/domain/`) contains entities, value objects, events, errors, factories, and repository **port interfaces**. It has **zero infrastructure dependencies**.
-- **Application layer** (`shared/application/`, `core/application/`) contains CQRS command/query handlers, event handlers (projectors), and output port interfaces (e.g., `DomainEventPublisher`).
-- **Infrastructure layer** (`shared/infrastructure/`) contains DynamoDB adapters (write/event store), MongoDB adapters (read/view store), and Kafka adapters (messaging).
-- **Config layer** (`shared/config/`) contains Quarkus CDI producers and custom qualifiers.
+- **Modular Monolith**: The system is organized into distinct, highly cohesive Bounded Contexts (`notification`, `template`, and `shared` kernel).
+- **Domain layer** (`{context}/domain/`) contains entities, value objects, events, errors, factories, and repository **port interfaces**. It has **zero infrastructure dependencies**.
+- **Application layer** (`{context}/application/`) contains CQRS command/query handlers, event handlers (projectors), and output port interfaces (e.g., `DomainEventPublisher`).
+- **Infrastructure layer** (`{context}/infrastructure/`) contains DynamoDB adapters (write/event store), MongoDB adapters (read/view store), and Kafka/REST adapters (messaging/controllers).
+- **Shared Kernel** (`shared/`) contains core building blocks like `BaseEntity`, `DomainEvent`, global CQRS interfaces, and common utilities that all contexts can use.
 
 ### Package Structure
 
-```
+```text
 src/main/kotlin/br/com/olympus/hermes/
-├── core/
-│   └── application/
-│       ├── commands/               # Feature-specific command handlers
-│       ├── queries/                # Feature-specific query handlers
-│       └── projectors/             # Read-model projectors (application logic, no Kafka deps)
-├── infrastructure/
-│   ├── kafka/
-│   │   └── consumers/             # @Incoming Kafka consumer classes (SmallRye Reactive Messaging)
-│   └── rest/
-│       ├── controllers/            # JAX-RS @Path resource classes
-│       ├── request/                # HTTP request body DTOs
-│       └── response/               # HTTP response body DTOs
+├── notification/
+│   ├── application/                # Command handlers, projectors, queries for Notification
+│   ├── domain/                     # Entities, events, value objects, ports for Notification
+│   └── infrastructure/             # Controllers, Kafka consumers, DB adapters for Notification
 ├── shared/
-│   ├── application/
-│   │   ├── cqrs/                   # Command / CommandHandler / Query / QueryHandler interfaces
-│   │   └── ports/                  # Output port interfaces (DomainEventPublisher, etc.)
-│   ├── config/                     # CDI producers, qualifiers
-│   ├── domain/
-│   │   ├── entities/               # BaseEntity, AggregateRoot, Notification hierarchy
-│   │   ├── events/                 # Sealed DomainEvent hierarchy
-│   │   ├── exceptions/             # Sealed BaseError hierarchy (ClientError / ServerError)
-│   │   ├── factories/              # NotificationFactory + Registry (Factory pattern)
-│   │   ├── repositories/           # Port interfaces (NotificationRepository, EventStore)
-│   │   └── valueobjects/           # Value Objects (EntityId, Email, BrazilianPhone, EmailSubject)
-│   └── infrastructure/
-│       ├── persistence/            # DynamoDB implementations, record models, serde (write/event store)
-│       ├── readmodel/              # MongoDB implementations, view models (read store)
-│       └── messaging/              # Kafka producer (KafkaDomainEventPublisher), KafkaEventWrapper
+│   ├── application/                # CQRS interfaces, generic ports
+│   ├── config/                     # CDI producers, global config
+│   ├── domain/                     # BaseEntity, DomainEvent interfaces, BaseErrors
+│   └── infrastructure/             # Global exception mappers, shared Kafka wrappers
+├── template/
+│   ├── application/                # Command handlers, queries for Template
+│   ├── domain/                     # Entities, value objects, domain services for Template
+│   └── infrastructure/             # Controllers, DB adapters for Template
 ```
 
 ## Coding Conventions — FOLLOW STRICTLY
@@ -132,40 +118,40 @@ src/main/kotlin/br/com/olympus/hermes/
 #### Event Handlers (Projectors)
 
 - Projectors are **split into two layers**:
-    - **Application projector** (`core/application/projectors/`): pure business logic. Implements `EventHandler<E : DomainEvent>` with `fun handle(event: E): Either<BaseError, Unit>`. No Kafka or infrastructure dependencies.
-    - **Infrastructure consumer** (`infrastructure/kafka/consumers/`): thin `@Incoming` adapter that deserialises the Kafka message and delegates to the projector. Annotated with `@Blocking`.
+    - **Application projector** (`{context}/application/projectors/`): pure business logic. Implements `EventHandler<E : DomainEvent>` with `fun handle(event: E): Either<BaseError, Unit>`. No Kafka or infrastructure dependencies.
+    - **Infrastructure consumer** (`{context}/infrastructure/messaging/consumers/`): thin `@Incoming` adapter that deserialises the Kafka message and delegates to the projector. Annotated with `@Blocking`.
 - Each projector is responsible for creating/updating a single `*View` document type.
 - Name projectors as `{Entity}{EventType}Projector.kt` (e.g. `NotificationCreatedProjector`).
 - Name consumers as `{Entity}{EventType}Consumer.kt` (e.g. `NotificationCreatedConsumer`).
 - Projectors must be **idempotent** — re-processing the same event produces the same state. Use the `event.aggregateId` as the MongoDB document ID.
 - Annotate projectors with `@WithSpan("{aggregate}.projector.apply")` and set `{aggregate}.id`, `{aggregate}.type`, and `{aggregate}.view.upserted` attributes. Use `Log.info` for projection entry and success.
 
-#### NotificationView (Read Model)
+#### View Models (Read Model)
 
-- `NotificationView` is a MongoDB document (`@MongoEntity`) living in `shared/infrastructure/readmodel/`.
-- It is a **denormalized, flat projection** optimised for fast reads — no business logic, no domain rules.
+- View models (e.g., `NotificationView`, `TemplateView`) are MongoDB documents (`@MongoEntity`) living in `{context}/infrastructure/readmodel/`.
+- They are **denormalized, flat projections** optimised for fast reads — no business logic, no domain rules.
 - Fields should mirror what the API/UI needs directly; avoid joins or lazy-loaded relations.
-- Use a dedicated MongoDB collection per aggregate type (e.g., `notifications`).
+- Use a dedicated MongoDB collection per aggregate type (e.g., `notifications`, `templates`).
 
 ### Infrastructure / DynamoDB (Write / Event Store)
 
 - Use **DynamoDB Enhanced Client** with `@DynamoDbBean` annotated record classes.
 - Single-table design with `PK`/`SK` pattern.
 - Use custom CDI qualifiers (e.g., `@NotificationTable`, `@EventStoreTable`) to distinguish table bindings.
-- Record classes are mutable Java-bean-style (required by DynamoDB Enhanced).
+- Record classes are mutable Java-bean-style (required by DynamoDB Enhanced) and live in `{context}/infrastructure/persistence/`.
 
 ### Infrastructure / MongoDB (Read Store)
 
 - Use **Quarkus MongoDB with Panache** (`quarkus-mongodb-panache-kotlin`).
 - View documents extend `PanacheMongoEntityBase` (or use `PanacheMongoRepository` pattern).
-- Place view document classes under `shared/infrastructure/readmodel/`.
+- Place view document classes under `{context}/infrastructure/readmodel/`.
 - Use `@MongoEntity(collection = "<name>")` to bind to the correct collection.
-- Repository interfaces for the read model live in `shared/domain/repositories/` as read-model ports; implementations live in `shared/infrastructure/readmodel/`.
+- Repository interfaces for the read model live in `{context}/domain/repositories/` as read-model ports; implementations live in `{context}/infrastructure/readmodel/`.
 
 ### Infrastructure / Kafka (Messaging)
 
 - Use **SmallRye Reactive Messaging** (`quarkus-smallrye-reactive-messaging-kafka`).
-- `DomainEventPublisher` port is implemented by a Kafka producer in `shared/infrastructure/messaging/`.
+- `DomainEventPublisher` port and `KafkaDomainEventPublisher` implementation are located in `shared/infrastructure/messaging/` for reuse across contexts.
 - After `aggregate.commit()` the command handler calls `DomainEventPublisher.publish(events)`; the publisher emits each event to the appropriate Kafka topic.
 - Event handler consumers use `@Incoming("<channel>")` and deserialise payloads via Jackson.
 - Topic naming convention: `hermes.{aggregate}.{event-type}` (kebab-case, all lowercase).
@@ -192,10 +178,10 @@ src/main/kotlin/br/com/olympus/hermes/
 
 ## Generation Rules
 
-1. **New notification type**: create entity in `entities/`, factory in `factories/`, created-event in `events/`, register in `NotificationFactoryRegistry.init`, add record converter in `persistence/`, add view document + projector in `readmodel/` + `projectors/`, add Kafka consumer in `infrastructure/kafka/consumers/`.
-2. **New command**: create `Command` data class (with `id: String = UUID.randomUUID().toString()`) + `CommandHandler<C>` implementation returning `Either<BaseError, Unit>` in `core/application/commands/`; handler must call `aggregate.commit()` after persisting to DynamoDB. Annotate with `@WithSpan`.
-3. **New query**: create `Query<R>` data class + `QueryHandler` implementation in `core/application/queries/`; read exclusively from MongoDB. Annotate with `@WithSpan`.
-4. **New projector**: create `EventHandler` in `core/application/projectors/` (no Kafka deps); create thin `@Incoming` consumer in `infrastructure/kafka/consumers/` that delegates to the projector; update the corresponding `*View` document in MongoDB; use `event.aggregateId` as document ID; ensure idempotency. Annotate projector with `@WithSpan`.
+1. **New notification/template type**: create entity in `{context}/domain/entities/`, factory in `factories/`, created-event in `events/`, register in `NotificationFactoryRegistry.init` (if applicable), add record converter in `infrastructure/persistence/`, add view document + projector in `infrastructure/readmodel/` + `application/projectors/`, add Kafka consumer in `infrastructure/messaging/consumers/`.
+2. **New command**: create `Command` data class (with `id: String = UUID.randomUUID().toString()`) + `CommandHandler<C>` implementation returning `Either<BaseError, Unit>` in `{context}/application/commands/`; handler must call `aggregate.commit()` after persisting to DynamoDB. Annotate with `@WithSpan`.
+3. **New query**: create `Query<R>` data class + `QueryHandler` implementation in `{context}/application/queries/`; read exclusively from MongoDB. Annotate with `@WithSpan`.
+4. **New projector**: create `EventHandler` in `{context}/application/projectors/` (no Kafka deps); create thin `@Incoming` consumer in `{context}/infrastructure/messaging/consumers/` that delegates to the projector; update the corresponding `*View` document in MongoDB; use `event.aggregateId` as document ID; ensure idempotency. Annotate projector with `@WithSpan`.
 5. **New value object**: use `@JvmInline value class` with private constructor, companion factory returning `Either`, and corresponding error type in `BaseError.kt`.
 6. **New repository port**: define interface in `domain/repositories/`, implement in `infrastructure/persistence/` (write) or `infrastructure/readmodel/` (read).
 7. **New error type**: add as `data class` implementing `ClientError` or `ServerError` in `BaseError.kt`, in the appropriate section.
