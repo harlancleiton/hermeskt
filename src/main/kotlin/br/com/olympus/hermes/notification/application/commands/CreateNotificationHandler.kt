@@ -2,6 +2,7 @@ package br.com.olympus.hermes.notification.application.commands
 
 import arrow.core.Either
 import arrow.core.raise.either
+import br.com.olympus.hermes.notification.application.ports.TemplateResolver
 import br.com.olympus.hermes.notification.domain.entities.Notification
 import br.com.olympus.hermes.notification.domain.factories.NotificationFactoryRegistry
 import br.com.olympus.hermes.notification.domain.repositories.NotificationRepository
@@ -9,8 +10,6 @@ import br.com.olympus.hermes.shared.application.cqrs.CommandHandler
 import br.com.olympus.hermes.shared.application.ports.DomainEventPublisher
 import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
-import br.com.olympus.hermes.template.domain.services.TemplateEngine
-import br.com.olympus.hermes.template.domain.valueobjects.TemplateName
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import io.quarkus.logging.Log
@@ -21,7 +20,7 @@ class CreateNotificationHandler(
     private val notificationRepository: NotificationRepository,
     private val eventPublisher: DomainEventPublisher,
     private val factoryRegistry: NotificationFactoryRegistry,
-    private val templateEngine: TemplateEngine,
+    private val templateResolver: TemplateResolver,
 ) : CommandHandler<CreateNotificationCommand> {
     @WithSpan("notification.create")
     override fun handle(command: CreateNotificationCommand): Either<BaseError, Unit> =
@@ -65,14 +64,13 @@ class CreateNotificationHandler(
                 return@either command
             }
 
-            val name = TemplateName.create(templateName).bind()
-            val resolved = templateEngine.resolve(name, command.type, command.payload).bind()
+            val resolved = templateResolver.resolve(templateName, command.type, command.payload).bind()
             Span.current().apply {
                 setAttribute("notification.template.used", true)
-                setAttribute("notification.template.name", name.value)
+                setAttribute("notification.template.name", templateName)
             }
             Log.info(
-                "Resolved template name=${name.value} for notification id=${command.id}",
+                "Resolved template name=$templateName for notification id=${command.id}",
             )
 
             when (command) {
@@ -85,8 +83,12 @@ class CreateNotificationHandler(
                     command.copy(
                         content = resolved.body,
                     )
+                is CreateNotificationCommand.Push ->
+                    command.copy(
+                        content = resolved.body,
+                        title = resolved.subject ?: command.title,
+                    )
                 is CreateNotificationCommand.WhatsApp -> command
-                is CreateNotificationCommand.Push -> command
             }
         }
 }
