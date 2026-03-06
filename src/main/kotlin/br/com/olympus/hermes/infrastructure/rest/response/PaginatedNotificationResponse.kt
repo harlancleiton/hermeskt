@@ -1,6 +1,6 @@
 package br.com.olympus.hermes.infrastructure.rest.response
 
-import br.com.olympus.hermes.shared.domain.repositories.PaginatedResult
+import br.com.olympus.hermes.shared.application.repositories.PaginatedResult
 import br.com.olympus.hermes.shared.infrastructure.readmodel.NotificationView
 
 /** HTTP response DTO for paginated notification queries. */

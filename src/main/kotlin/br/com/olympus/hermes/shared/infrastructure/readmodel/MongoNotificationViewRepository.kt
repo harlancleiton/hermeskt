@@ -46,7 +46,7 @@ class MongoNotificationViewRepository : NotificationViewRepository {
         type: String?,
     ): Either<
         BaseError,
-        br.com.olympus.hermes.shared.domain.repositories.PaginatedResult<NotificationView>,
+        br.com.olympus.hermes.shared.application.repositories.PaginatedResult<NotificationView>,
     > =
         Either
             .catch {
@@ -72,7 +72,7 @@ class MongoNotificationViewRepository : NotificationViewRepository {
                 val count = panacheQuery.count()
                 val items = panacheQuery.page(pageIndex, pageSize).list()
 
-                br.com.olympus.hermes.shared.domain.repositories.PaginatedResult(
+                br.com.olympus.hermes.shared.application.repositories.PaginatedResult(
                     items = items,
                     totalCount = count,
                     pageIndex = pageIndex,

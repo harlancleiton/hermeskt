@@ -3,9 +3,9 @@ package br.com.olympus.hermes.core.application.queries
 import arrow.core.Either
 import arrow.core.raise.either
 import br.com.olympus.hermes.shared.application.cqrs.QueryHandler
+import br.com.olympus.hermes.shared.application.repositories.PaginatedResult
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.repositories.NotificationViewRepository
-import br.com.olympus.hermes.shared.domain.repositories.PaginatedResult
 import br.com.olympus.hermes.shared.infrastructure.readmodel.NotificationView
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan

@@ -1,4 +1,4 @@
-package br.com.olympus.hermes.shared.domain.repositories
+package br.com.olympus.hermes.shared.application.repositories
 
 /**
  * Represents a paginated result set of items.

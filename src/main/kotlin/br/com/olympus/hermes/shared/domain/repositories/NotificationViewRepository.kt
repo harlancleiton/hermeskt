@@ -1,6 +1,7 @@
 package br.com.olympus.hermes.shared.domain.repositories
 
 import arrow.core.Either
+import br.com.olympus.hermes.shared.application.repositories.PaginatedResult
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 
