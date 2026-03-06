@@ -84,6 +84,8 @@ src/main/kotlin/br/com/olympus/hermes/
 - Use `.mapLeft`, `.flatMap`, `.onRight`, `.onLeft` for `Either` transformations.
 - All error types extend the `sealed interface BaseError` with `ClientError` or `ServerError` subtypes.
 - When creating a new error type, add it to `BaseError.kt` following the existing grouped/sectioned pattern.
+- In the REST infrastructure layer, use `.getOrThrowDomain()` on `Either` to unwrap the value or throw a JAX-RS `DomainException`.
+- A global `DomainExceptionMapper` handles these exceptions and translates them into standardized HTTP `ErrorResponse`s.
 
 ### Domain-Driven Design
 
@@ -102,6 +104,12 @@ src/main/kotlin/br/com/olympus/hermes/
 - DynamoDB key design: `PK` = aggregateId, `SK` = zero-padded version string.
 
 ### CQRS
+
+#### Controllers (REST)
+
+- Controllers should **not** contain business logic or manual error mapping (e.g., `fold` or explicit `ifLeft()`).
+- Call command/query handlers and unwrap the result using `.getOrThrowDomain()`.
+- Let the `DomainExceptionMapper` globally handle mapping the underlying `BaseError` to the appropriate HTTP status code (400, 404, 409, 422, 500).
 
 #### Write Side (Commands)
 
