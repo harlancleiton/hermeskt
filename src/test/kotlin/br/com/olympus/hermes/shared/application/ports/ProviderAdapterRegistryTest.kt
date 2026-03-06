@@ -10,22 +10,17 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ProviderAdapterRegistryTest {
-    private fun makeAdapter(type: NotificationType): NotificationProviderAdapter =
-        mockk {
-            every { supports(type) } returns true
-            every { supports(neq(type)) } returns false
-        }
+    private fun makeAdapter(type: NotificationType): NotificationProviderAdapter = mockk {
+        every { supports(type) } returns true
+        every { supports(neq(type)) } returns false
+    }
 
-    private fun makeRegistry(vararg adapters: NotificationProviderAdapter): ProviderAdapterRegistry {
-        val instance: Instance<NotificationProviderAdapter> =
-            mockk {
-                every { iterator() } returns adapters.toList().iterator()
-                every { firstOrNull(any()) } answers
-                    {
-                        val predicate = firstArg<(NotificationProviderAdapter) -> Boolean>()
-                        adapters.firstOrNull { predicate(it) }
-                    }
-            }
+    private fun makeRegistry(
+            vararg adapters: NotificationProviderAdapter
+    ): ProviderAdapterRegistry {
+        val instance: Instance<NotificationProviderAdapter> = mockk {
+            every { iterator() } returns adapters.toMutableList().iterator()
+        }
         return ProviderAdapterRegistry(instance)
     }
 
@@ -80,5 +75,3 @@ class ProviderAdapterRegistryTest {
         result.onLeft { assertInstanceOf(ProviderAdapterNotFoundError::class.java, it) }
     }
 }
-
-private fun <T> neq(value: T): T = io.mockk.match { it != value }
