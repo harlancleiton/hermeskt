@@ -25,12 +25,8 @@ class ListNotificationsQueryHandler(
                 setAttribute("query.page", query.page.toLong())
                 setAttribute("query.size", query.size.toLong())
             }
-            Log.debugf(
-                "Listing notifications status=%s type=%s page=%d size=%d",
-                query.status ?: "<all>",
-                query.type ?: "<all>",
-                query.page,
-                query.size,
+            Log.debug(
+                "Listing notifications status=${query.status ?: "<all>"} type=${query.type ?: "<all>"} page=${query.page} size=${query.size}",
             )
 
             val result =

@@ -25,7 +25,7 @@ class GetTemplateQueryHandler(
                 setAttribute("template.name", query.name)
                 setAttribute("template.channel", query.channel)
             }
-            Log.debugf("Querying template name=%s channel=%s", query.name, query.channel)
+            Log.debug("Querying template name=${query.name} channel=${query.channel}")
             val name = TemplateName.create(query.name).bind()
             val channel = parseChannel(query.channel).bind()
             val template = templateRepository.findByNameAndChannel(name, channel).bind()

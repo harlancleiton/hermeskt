@@ -1,18 +1,19 @@
 package br.com.olympus.hermes.infrastructure.rest.controllers
 
-import arrow.core.flatMap
 import br.com.olympus.hermes.core.application.commands.CreateNotificationHandler
 import br.com.olympus.hermes.core.application.queries.GetNotificationQuery
 import br.com.olympus.hermes.core.application.queries.GetNotificationQueryHandler
 import br.com.olympus.hermes.core.application.queries.ListNotificationsQuery
 import br.com.olympus.hermes.core.application.queries.ListNotificationsQueryHandler
+import br.com.olympus.hermes.infrastructure.rest.exceptions.DomainException
+import br.com.olympus.hermes.infrastructure.rest.extensions.getOrThrowDomain
 import br.com.olympus.hermes.infrastructure.rest.request.CreateEmailNotificationRequest
 import br.com.olympus.hermes.infrastructure.rest.request.CreatePushNotificationRequest
 import br.com.olympus.hermes.infrastructure.rest.request.CreateSmsNotificationRequest
 import br.com.olympus.hermes.infrastructure.rest.request.CreateWhatsAppNotificationRequest
 import br.com.olympus.hermes.infrastructure.rest.response.NotificationViewResponse
 import br.com.olympus.hermes.infrastructure.rest.response.PaginatedNotificationResponse
-import br.com.olympus.hermes.shared.domain.exceptions.ClientError
+import br.com.olympus.hermes.shared.domain.exceptions.InvalidNotificationTypeError
 import br.com.olympus.hermes.shared.domain.exceptions.NotificationNotFoundError
 import br.com.olympus.hermes.shared.domain.factories.NotificationType
 import jakarta.ws.rs.Consumes
@@ -35,7 +36,11 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses
 /**
  * REST resource exposing notification management endpoints.
  *
+ * Error handling is delegated to [DomainExceptionMapper] via [DomainException].
+ *
  * @property createNotificationHandler Handler for the notification creation command.
+ * @property getNotificationQueryHandler Handler for single notification queries.
+ * @property listNotificationsQueryHandler Handler for paginated notification listing.
  */
 @Path("/notifications")
 @Produces(MediaType.APPLICATION_JSON)
@@ -49,7 +54,7 @@ class NotificationController(
      * Creates a new email notification.
      *
      * @param request The request body containing the email notification details.
-     * @return 201 Created with the notification id, or 400/500 on failure.
+     * @return 201 Created with the notification id.
      */
     @POST
     @Path("/email")
@@ -79,41 +84,20 @@ class NotificationController(
                 ),
             ],
     )
-    fun createEmailNotification(request: CreateEmailNotificationRequest): Response =
-        request
-            .toCommand()
-            .flatMap { command ->
-                createNotificationHandler.handle(command).map {
-                    mapOf(
-                        "id" to command.id,
-                    )
-                }
-            }.fold(
-                ifLeft = { error ->
-                    val status =
-                        if (error is ClientError) {
-                            Response.Status.BAD_REQUEST
-                        } else {
-                            Response.Status.INTERNAL_SERVER_ERROR
-                        }
-                    Response
-                        .status(status)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { response ->
-                    Response
-                        .status(Response.Status.CREATED)
-                        .entity(response)
-                        .build()
-                },
-            )
+    fun createEmailNotification(request: CreateEmailNotificationRequest): Response {
+        val command = request.toCommand().getOrThrowDomain()
+        createNotificationHandler.handle(command).getOrThrowDomain()
+        return Response
+            .status(Response.Status.CREATED)
+            .entity(mapOf("id" to command.id))
+            .build()
+    }
 
     /**
      * Creates a new push notification.
      *
      * @param request The request body containing the push notification details.
-     * @return 201 Created with the notification id, or 400/500 on failure.
+     * @return 201 Created with the notification id.
      */
     @POST
     @Path("/push")
@@ -143,41 +127,20 @@ class NotificationController(
                 ),
             ],
     )
-    fun createPushNotification(request: CreatePushNotificationRequest): Response =
-        request
-            .toCommand()
-            .flatMap { command ->
-                createNotificationHandler.handle(command).map {
-                    mapOf(
-                        "id" to command.id,
-                    )
-                }
-            }.fold(
-                ifLeft = { error ->
-                    val status =
-                        if (error is ClientError) {
-                            Response.Status.BAD_REQUEST
-                        } else {
-                            Response.Status.INTERNAL_SERVER_ERROR
-                        }
-                    Response
-                        .status(status)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { response ->
-                    Response
-                        .status(Response.Status.CREATED)
-                        .entity(response)
-                        .build()
-                },
-            )
+    fun createPushNotification(request: CreatePushNotificationRequest): Response {
+        val command = request.toCommand().getOrThrowDomain()
+        createNotificationHandler.handle(command).getOrThrowDomain()
+        return Response
+            .status(Response.Status.CREATED)
+            .entity(mapOf("id" to command.id))
+            .build()
+    }
 
     /**
      * Creates a new SMS notification.
      *
      * @param request The request body containing the SMS notification details.
-     * @return 201 Created with the notification id, or 400/500 on failure.
+     * @return 201 Created with the notification id.
      */
     @POST
     @Path("/sms")
@@ -207,41 +170,20 @@ class NotificationController(
                 ),
             ],
     )
-    fun createSmsNotification(request: CreateSmsNotificationRequest): Response =
-        request
-            .toCommand()
-            .flatMap { command ->
-                createNotificationHandler.handle(command).map {
-                    mapOf(
-                        "id" to command.id,
-                    )
-                }
-            }.fold(
-                ifLeft = { error ->
-                    val status =
-                        if (error is ClientError) {
-                            Response.Status.BAD_REQUEST
-                        } else {
-                            Response.Status.INTERNAL_SERVER_ERROR
-                        }
-                    Response
-                        .status(status)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { response ->
-                    Response
-                        .status(Response.Status.CREATED)
-                        .entity(response)
-                        .build()
-                },
-            )
+    fun createSmsNotification(request: CreateSmsNotificationRequest): Response {
+        val command = request.toCommand().getOrThrowDomain()
+        createNotificationHandler.handle(command).getOrThrowDomain()
+        return Response
+            .status(Response.Status.CREATED)
+            .entity(mapOf("id" to command.id))
+            .build()
+    }
 
     /**
      * Creates a new WhatsApp notification.
      *
      * @param request The request body containing the WhatsApp notification details.
-     * @return 201 Created with the notification id, or 400/500 on failure.
+     * @return 201 Created with the notification id.
      */
     @POST
     @Path("/whatsapp")
@@ -272,35 +214,14 @@ class NotificationController(
                 ),
             ],
     )
-    fun createWhatsAppNotification(request: CreateWhatsAppNotificationRequest): Response =
-        request
-            .toCommand()
-            .flatMap { command ->
-                createNotificationHandler.handle(command).map {
-                    mapOf(
-                        "id" to command.id,
-                    )
-                }
-            }.fold(
-                ifLeft = { error ->
-                    val status =
-                        if (error is ClientError) {
-                            Response.Status.BAD_REQUEST
-                        } else {
-                            Response.Status.INTERNAL_SERVER_ERROR
-                        }
-                    Response
-                        .status(status)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { response ->
-                    Response
-                        .status(Response.Status.CREATED)
-                        .entity(response)
-                        .build()
-                },
-            )
+    fun createWhatsAppNotification(request: CreateWhatsAppNotificationRequest): Response {
+        val command = request.toCommand().getOrThrowDomain()
+        createNotificationHandler.handle(command).getOrThrowDomain()
+        return Response
+            .status(Response.Status.CREATED)
+            .entity(mapOf("id" to command.id))
+            .build()
+    }
 
     /**
      * Retrieves a paginated list of notifications.
@@ -322,6 +243,7 @@ class NotificationController(
             responseCode = "200",
             description = "Notifications retrieved successfully",
         ),
+        APIResponse(responseCode = "400", description = "Invalid query parameter"),
         APIResponse(responseCode = "500", description = "Server-side failure"),
     )
     fun listNotifications(
@@ -332,18 +254,10 @@ class NotificationController(
     ): Response {
         val notificationType =
             type?.let {
-                try {
-                    NotificationType.valueOf(it.uppercase())
-                } catch (e: IllegalArgumentException) {
-                    return Response
-                        .status(Response.Status.BAD_REQUEST)
-                        .entity(
-                            mapOf(
-                                "message" to
-                                    "Invalid notification type: $it",
-                            ),
-                        ).build()
+                NotificationType.entries.find { entry ->
+                    entry.name.equals(it, ignoreCase = true)
                 }
+                    ?: throw DomainException(InvalidNotificationTypeError(it))
             }
 
         val query =
@@ -354,21 +268,8 @@ class NotificationController(
                 size = size,
             )
 
-        return listNotificationsQueryHandler
-            .handle(query)
-            .fold(
-                ifLeft = { error ->
-                    Response
-                        .status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { result ->
-                    Response
-                        .ok(PaginatedNotificationResponse.from(result))
-                        .build()
-                },
-            )
+        val result = listNotificationsQueryHandler.handle(query).getOrThrowDomain()
+        return Response.ok(PaginatedNotificationResponse.from(result)).build()
     }
 
     /**
@@ -393,47 +294,10 @@ class NotificationController(
         @PathParam("id") id: String,
     ): Response {
         val query = GetNotificationQuery(id)
+        val notificationView =
+            getNotificationQueryHandler.handle(query).getOrThrowDomain()
+                ?: throw DomainException(NotificationNotFoundError(id))
 
-        return getNotificationQueryHandler
-            .handle(query)
-            .fold(
-                ifLeft = { error ->
-                    val status =
-                        when (error) {
-                            is NotificationNotFoundError ->
-                                Response.Status.NOT_FOUND
-                            else ->
-                                if (error.isClientError()) {
-                                    Response.Status.BAD_REQUEST
-                                } else {
-                                    Response.Status
-                                        .INTERNAL_SERVER_ERROR
-                                }
-                        }
-                    Response
-                        .status(status)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { notificationView ->
-                    if (notificationView != null) {
-                        Response
-                            .ok(
-                                NotificationViewResponse.from(
-                                    notificationView,
-                                ),
-                            ).build()
-                    } else {
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity(
-                                mapOf(
-                                    "message" to
-                                        "Notification not found",
-                                ),
-                            ).build()
-                    }
-                },
-            )
+        return Response.ok(NotificationViewResponse.from(notificationView)).build()
     }
 }

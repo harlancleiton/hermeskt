@@ -1,7 +1,5 @@
 package br.com.olympus.hermes.infrastructure.rest.controllers
 
-import arrow.core.flatMap
-import arrow.core.raise.either
 import br.com.olympus.hermes.core.application.commands.CreateTemplateHandler
 import br.com.olympus.hermes.core.application.commands.DeleteTemplateCommand
 import br.com.olympus.hermes.core.application.commands.DeleteTemplateHandler
@@ -10,11 +8,11 @@ import br.com.olympus.hermes.core.application.queries.GetTemplateQuery
 import br.com.olympus.hermes.core.application.queries.GetTemplateQueryHandler
 import br.com.olympus.hermes.core.application.queries.ListTemplatesQuery
 import br.com.olympus.hermes.core.application.queries.ListTemplatesQueryHandler
+import br.com.olympus.hermes.infrastructure.rest.exceptions.DomainException
+import br.com.olympus.hermes.infrastructure.rest.extensions.getOrThrowDomain
 import br.com.olympus.hermes.infrastructure.rest.request.CreateTemplateRequest
 import br.com.olympus.hermes.infrastructure.rest.request.UpdateTemplateRequest
 import br.com.olympus.hermes.infrastructure.rest.response.TemplateResponse
-import br.com.olympus.hermes.shared.domain.exceptions.ClientError
-import br.com.olympus.hermes.shared.domain.exceptions.TemplateDuplicateError
 import br.com.olympus.hermes.shared.domain.exceptions.TemplateNotFoundError
 import jakarta.ws.rs.Consumes
 import jakarta.ws.rs.DELETE
@@ -33,6 +31,11 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse
 import org.eclipse.microprofile.openapi.annotations.tags.Tag
 
+/**
+ * REST resource exposing template CRUD endpoints.
+ *
+ * Error handling is delegated to [DomainExceptionMapper] via [DomainException].
+ */
 @Path("/templates")
 @Tag(name = "Templates")
 @Produces(MediaType.APPLICATION_JSON)
@@ -53,49 +56,23 @@ class TemplateController(
     )
     fun create(request: CreateTemplateRequest): Response {
         val command = request.toCommand()
-        return createTemplateHandler
-            .handle(command)
-            .flatMap {
-                either {
-                    getTemplateQueryHandler
-                        .handle(
-                            GetTemplateQuery(
-                                name = command.name,
-                                channel = command.channel,
-                            ),
-                        ).bind()
-                }
-            }.fold(
-                ifLeft = { error ->
-                    val status =
-                        when (error) {
-                            is TemplateDuplicateError -> Response.Status.CONFLICT
-                            is ClientError -> Response.Status.BAD_REQUEST
-                            else -> Response.Status.INTERNAL_SERVER_ERROR
-                        }
-                    Response
-                        .status(status)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { template ->
-                    if (template == null) {
-                        Response
-                            .status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity(
-                                mapOf(
-                                    "message" to
-                                        "Template not found after creation",
-                                ),
-                            ).build()
-                    } else {
-                        Response
-                            .status(Response.Status.CREATED)
-                            .entity(TemplateResponse.from(template))
-                            .build()
-                    }
-                },
-            )
+        createTemplateHandler.handle(command).getOrThrowDomain()
+
+        val template =
+            getTemplateQueryHandler
+                .handle(GetTemplateQuery(name = command.name, channel = command.channel))
+                .getOrThrowDomain()
+                ?: throw DomainException(
+                    TemplateNotFoundError(
+                        name = command.name,
+                        channel = command.channel,
+                    ),
+                )
+
+        return Response
+            .status(Response.Status.CREATED)
+            .entity(TemplateResponse.from(template))
+            .build()
     }
 
     @GET
@@ -109,33 +86,17 @@ class TemplateController(
     fun get(
         @PathParam("name") name: String,
         @QueryParam("channel") channel: String,
-    ): Response =
-        getTemplateQueryHandler
-            .handle(GetTemplateQuery(name = name, channel = channel))
-            .fold(
-                ifLeft = { error ->
-                    val status =
-                        if (error.isClientError()) {
-                            Response.Status.BAD_REQUEST
-                        } else {
-                            Response.Status.INTERNAL_SERVER_ERROR
-                        }
-                    Response
-                        .status(status)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { template ->
-                    if (template == null) {
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity(mapOf("message" to "Not found"))
-                            .build()
-                    } else {
-                        Response.ok(TemplateResponse.from(template)).build()
-                    }
-                },
-            )
+    ): Response {
+        val template =
+            getTemplateQueryHandler
+                .handle(GetTemplateQuery(name = name, channel = channel))
+                .getOrThrowDomain()
+                ?: throw DomainException(
+                    TemplateNotFoundError(name = name, channel = channel),
+                )
+
+        return Response.ok(TemplateResponse.from(template)).build()
+    }
 
     @GET
     @Operation(summary = "List templates")
@@ -152,30 +113,17 @@ class TemplateController(
         val resolvedPage = page ?: 0
         val resolvedSize = size ?: 20
 
-        return listTemplatesQueryHandler
-            .handle(
-                ListTemplatesQuery(
-                    channel = channel,
-                    page = resolvedPage,
-                    size = resolvedSize,
-                ),
-            ).fold(
-                ifLeft = { error ->
-                    val status =
-                        if (error is ClientError) {
-                            Response.Status.BAD_REQUEST
-                        } else {
-                            Response.Status.INTERNAL_SERVER_ERROR
-                        }
-                    Response
-                        .status(status)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { templates ->
-                    Response.ok(templates.map { TemplateResponse.from(it) }).build()
-                },
-            )
+        val templates =
+            listTemplatesQueryHandler
+                .handle(
+                    ListTemplatesQuery(
+                        channel = channel,
+                        page = resolvedPage,
+                        size = resolvedSize,
+                    ),
+                ).getOrThrowDomain()
+
+        return Response.ok(templates.map { TemplateResponse.from(it) }).build()
     }
 
     @PUT
@@ -191,46 +139,20 @@ class TemplateController(
         request: UpdateTemplateRequest,
     ): Response {
         val command = request.toCommand(name)
-        return updateTemplateHandler
-            .handle(command)
-            .flatMap {
-                either {
-                    getTemplateQueryHandler
-                        .handle(
-                            GetTemplateQuery(
-                                name = command.name,
-                                channel = command.channel,
-                            ),
-                        ).bind()
-                }
-            }.fold(
-                ifLeft = { error ->
-                    val status =
-                        when (error) {
-                            is TemplateNotFoundError -> Response.Status.NOT_FOUND
-                            is ClientError -> Response.Status.BAD_REQUEST
-                            else -> Response.Status.INTERNAL_SERVER_ERROR
-                        }
-                    Response
-                        .status(status)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { template ->
-                    if (template == null) {
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity(
-                                mapOf(
-                                    "message" to
-                                        "Template not found after update",
-                                ),
-                            ).build()
-                    } else {
-                        Response.ok(TemplateResponse.from(template)).build()
-                    }
-                },
-            )
+        updateTemplateHandler.handle(command).getOrThrowDomain()
+
+        val template =
+            getTemplateQueryHandler
+                .handle(GetTemplateQuery(name = command.name, channel = command.channel))
+                .getOrThrowDomain()
+                ?: throw DomainException(
+                    TemplateNotFoundError(
+                        name = command.name,
+                        channel = command.channel,
+                    ),
+                )
+
+        return Response.ok(TemplateResponse.from(template)).build()
     }
 
     @DELETE
@@ -240,22 +162,10 @@ class TemplateController(
     fun delete(
         @PathParam("name") name: String,
         @QueryParam("channel") channel: String,
-    ): Response =
+    ): Response {
         deleteTemplateHandler
             .handle(DeleteTemplateCommand(name = name, channel = channel))
-            .fold(
-                ifLeft = { error ->
-                    val status =
-                        when (error) {
-                            is TemplateNotFoundError -> Response.Status.NOT_FOUND
-                            is ClientError -> Response.Status.BAD_REQUEST
-                            else -> Response.Status.INTERNAL_SERVER_ERROR
-                        }
-                    Response
-                        .status(status)
-                        .entity(mapOf("message" to error.message))
-                        .build()
-                },
-                ifRight = { Response.noContent().build() },
-            )
+            .getOrThrowDomain()
+        return Response.noContent().build()
+    }
 }

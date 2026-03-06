@@ -32,7 +32,7 @@ class GetNotificationQueryHandler(
     override fun handle(query: GetNotificationQuery): Either<BaseError, NotificationView?> =
         either {
             Span.current().setAttribute("notification.id", query.id)
-            Log.debugf("Querying notification id=%s", query.id)
+            Log.debug("Querying notification id=${query.id}")
             val id = EntityId.from(query.id).mapLeft { InvalidUUIDError(query.id, null) }.bind()
             val view = viewRepository.findById(id).bind()
             Span.current().setAttribute("notification.found", view != null)

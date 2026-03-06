@@ -153,6 +153,12 @@ data class InvalidTemplateBodyError(
  *
  * @property type The notification type that was requested.
  */
+data class InvalidNotificationTypeError(
+    val value: String,
+) : ClientError {
+    override val message: String = "Invalid notification type: $value"
+}
+
 data class FactoryNotFoundError(
     val type: NotificationType,
 ) : ClientError {
