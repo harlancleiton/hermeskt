@@ -1,4 +1,4 @@
-package br.com.olympus.hermes.shared.domain.valueobjects
+package br.com.olympus.hermes.template.domain.valueobjects
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

@@ -1,8 +1,8 @@
-package br.com.olympus.hermes.core.application.commands
+package br.com.olympus.hermes.template.application.commands
 
 import arrow.core.right
 import br.com.olympus.hermes.shared.domain.exceptions.TemplateNotFoundError
-import br.com.olympus.hermes.shared.domain.repositories.TemplateRepository
+import br.com.olympus.hermes.template.domain.repositories.TemplateRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -22,6 +22,7 @@ class DeleteTemplateHandlerTest {
 
     @Test
     fun `should delete template successfully`() {
+        every { repository.existsByNameAndChannel(any(), any()) } returns true.right()
         every { repository.deleteByNameAndChannel(any(), any()) } returns true.right()
 
         val command = DeleteTemplateCommand(name = "welcome-email", channel = "EMAIL")
@@ -34,6 +35,7 @@ class DeleteTemplateHandlerTest {
 
     @Test
     fun `should return TemplateNotFoundError when template does not exist`() {
+        every { repository.existsByNameAndChannel(any(), any()) } returns false.right()
         every { repository.deleteByNameAndChannel(any(), any()) } returns false.right()
 
         val command = DeleteTemplateCommand(name = "nonexistent", channel = "EMAIL")

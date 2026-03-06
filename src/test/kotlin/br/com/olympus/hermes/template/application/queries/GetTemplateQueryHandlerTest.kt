@@ -1,18 +1,18 @@
-package br.com.olympus.hermes.core.application.queries
+package br.com.olympus.hermes.template.application.queries
 
 import arrow.core.right
-import br.com.olympus.hermes.shared.domain.entities.NotificationTemplate
+import br.com.olympus.hermes.template.domain.entities.NotificationTemplate
 import br.com.olympus.hermes.shared.domain.factories.NotificationType
-import br.com.olympus.hermes.shared.domain.repositories.TemplateRepository
-import br.com.olympus.hermes.shared.domain.valueobjects.TemplateBody
-import br.com.olympus.hermes.shared.domain.valueobjects.TemplateName
+import br.com.olympus.hermes.template.domain.repositories.TemplateRepository
+import br.com.olympus.hermes.template.domain.valueobjects.TemplateBody
+import br.com.olympus.hermes.template.domain.valueobjects.TemplateName
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.Date
+import java.time.Instant
 
 class GetTemplateQueryHandlerTest {
     private lateinit var repository: TemplateRepository
@@ -31,8 +31,8 @@ class GetTemplateQueryHandlerTest {
             subject = "Welcome!",
             body = TemplateBody.create("Hello {{name}}.").getOrNull()!!,
             description = null,
-            createdAt = Date(),
-            updatedAt = Date(),
+            createdAt = Instant.now(),
+            updatedAt = Instant.now(),
         )
 
     @Test

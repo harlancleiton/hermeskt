@@ -1,19 +1,19 @@
-package br.com.olympus.hermes.core.application.commands
+package br.com.olympus.hermes.template.application.commands
 
 import arrow.core.right
-import br.com.olympus.hermes.shared.domain.entities.NotificationTemplate
+import br.com.olympus.hermes.template.domain.entities.NotificationTemplate
 import br.com.olympus.hermes.shared.domain.exceptions.TemplateNotFoundError
 import br.com.olympus.hermes.shared.domain.factories.NotificationType
-import br.com.olympus.hermes.shared.domain.repositories.TemplateRepository
-import br.com.olympus.hermes.shared.domain.valueobjects.TemplateBody
-import br.com.olympus.hermes.shared.domain.valueobjects.TemplateName
+import br.com.olympus.hermes.template.domain.repositories.TemplateRepository
+import br.com.olympus.hermes.template.domain.valueobjects.TemplateBody
+import br.com.olympus.hermes.template.domain.valueobjects.TemplateName
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.Date
+import java.time.Instant
 
 class UpdateTemplateHandlerTest {
     private lateinit var repository: TemplateRepository
@@ -32,8 +32,8 @@ class UpdateTemplateHandlerTest {
             subject = "Welcome!",
             body = TemplateBody.create("Hello {{name}}.").getOrNull()!!,
             description = null,
-            createdAt = Date(),
-            updatedAt = Date(),
+            createdAt = Instant.now(),
+            updatedAt = Instant.now(),
         )
 
     @Test
