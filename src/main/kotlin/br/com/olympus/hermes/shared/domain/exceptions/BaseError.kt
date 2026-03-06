@@ -254,6 +254,30 @@ data class ProjectionError(
     override val message: String = "Failed to project event into read model: $reason"
 }
 
+/**
+ * Error indicating that the delivery of a notification to the external provider has failed.
+ *
+ * @property reason A description of the delivery failure.
+ */
+data class DeliveryError(
+    val reason: String,
+    override val cause: Throwable? = null,
+) : ServerError {
+    override val message: String = "Notification delivery failed: $reason"
+}
+
+/**
+ * Error indicating that no provider adapter is registered for the given notification type.
+ *
+ * @property type The notification type for which no adapter was found.
+ */
+data class ProviderAdapterNotFoundError(
+    val type: NotificationType,
+) : ServerError {
+    override val message: String = "No provider adapter registered for notification type: $type"
+    override val cause: Throwable? = null
+}
+
 // ========================================
 // Query / Read Model Errors
 // ========================================

@@ -8,11 +8,11 @@ import br.com.olympus.hermes.shared.domain.valueobjects.TemplateBody
 import br.com.olympus.hermes.shared.domain.valueobjects.TemplateName
 import io.mockk.every
 import io.mockk.mockk
-import java.util.Date
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.Date
 
 class ListTemplatesQueryHandlerTest {
     private lateinit var repository: TemplateRepository
@@ -25,18 +25,18 @@ class ListTemplatesQueryHandlerTest {
     }
 
     private fun makeTemplate(
-            name: String = "welcome-email",
-            channel: NotificationType = NotificationType.EMAIL,
+        name: String = "welcome-email",
+        channel: NotificationType = NotificationType.EMAIL,
     ): NotificationTemplate =
-            NotificationTemplate(
-                    name = TemplateName.create(name).getOrNull()!!,
-                    channel = channel,
-                    subject = null,
-                    body = TemplateBody.create("Hello.").getOrNull()!!,
-                    description = null,
-                    createdAt = Date(),
-                    updatedAt = Date(),
-            )
+        NotificationTemplate(
+            name = TemplateName.create(name).getOrNull()!!,
+            channel = channel,
+            subject = null,
+            body = TemplateBody.create("Hello.").getOrNull()!!,
+            description = null,
+            createdAt = Date(),
+            updatedAt = Date(),
+        )
 
     @Test
     fun `should return paginated list`() {
@@ -66,7 +66,7 @@ class ListTemplatesQueryHandlerTest {
     @Test
     fun `should return empty list when no templates match`() {
         every { repository.findAllByChannel(any(), any(), any()) } returns
-                emptyList<NotificationTemplate>().right()
+            emptyList<NotificationTemplate>().right()
 
         val result = handler.handle(ListTemplatesQuery(channel = "PUSH", page = 0, size = 20))
 

@@ -3,6 +3,7 @@ package br.com.olympus.hermes.shared.domain.entities
 import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import br.com.olympus.hermes.shared.domain.events.NotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.NotificationDeliveredEvent
+import br.com.olympus.hermes.shared.domain.events.NotificationDeliveryFailedEvent
 import br.com.olympus.hermes.shared.domain.events.NotificationSeenEvent
 import br.com.olympus.hermes.shared.domain.events.NotificationSentEvent
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
@@ -38,6 +39,7 @@ abstract class Notification
                     sentAt = event.sentAt
                 }
                 is NotificationCreatedEvent -> {}
+                is NotificationDeliveryFailedEvent -> {}
             }
         }
     }

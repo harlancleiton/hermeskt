@@ -10,10 +10,10 @@ import br.com.olympus.hermes.shared.domain.valueobjects.TemplateName
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.Date
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.Date
 
 class UpdateTemplateHandlerTest {
     private lateinit var repository: TemplateRepository
@@ -26,34 +26,34 @@ class UpdateTemplateHandlerTest {
     }
 
     private fun makeTemplate(): NotificationTemplate =
-            NotificationTemplate(
-                    name = TemplateName.create("welcome-email").getOrNull()!!,
-                    channel = NotificationType.EMAIL,
-                    subject = "Welcome!",
-                    body = TemplateBody.create("Hello {{name}}.").getOrNull()!!,
-                    description = null,
-                    createdAt = Date(),
-                    updatedAt = Date(),
-            )
+        NotificationTemplate(
+            name = TemplateName.create("welcome-email").getOrNull()!!,
+            channel = NotificationType.EMAIL,
+            subject = "Welcome!",
+            body = TemplateBody.create("Hello {{name}}.").getOrNull()!!,
+            description = null,
+            createdAt = Date(),
+            updatedAt = Date(),
+        )
 
     @Test
     fun `should update template successfully`() {
         val existing = makeTemplate()
         val updated =
-                existing.copy(
-                        body = TemplateBody.create("Hi {{name}}, updated!").getOrNull()!!,
-                )
+            existing.copy(
+                body = TemplateBody.create("Hi {{name}}, updated!").getOrNull()!!,
+            )
         every { repository.findByNameAndChannel(any(), any()) } returns existing.right()
         every { repository.update(any()) } returns updated.right()
 
         val command =
-                UpdateTemplateCommand(
-                        name = "welcome-email",
-                        channel = "EMAIL",
-                        subject = null,
-                        body = "Hi {{name}}, updated!",
-                        description = null,
-                )
+            UpdateTemplateCommand(
+                name = "welcome-email",
+                channel = "EMAIL",
+                subject = null,
+                body = "Hi {{name}}, updated!",
+                description = null,
+            )
 
         val result = handler.handle(command)
 
@@ -66,13 +66,13 @@ class UpdateTemplateHandlerTest {
         every { repository.findByNameAndChannel(any(), any()) } returns null.right()
 
         val command =
-                UpdateTemplateCommand(
-                        name = "nonexistent",
-                        channel = "EMAIL",
-                        subject = null,
-                        body = "New body.",
-                        description = null,
-                )
+            UpdateTemplateCommand(
+                name = "nonexistent",
+                channel = "EMAIL",
+                subject = null,
+                body = "New body.",
+                description = null,
+            )
 
         val result = handler.handle(command)
 

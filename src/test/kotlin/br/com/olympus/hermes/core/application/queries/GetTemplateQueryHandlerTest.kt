@@ -8,11 +8,11 @@ import br.com.olympus.hermes.shared.domain.valueobjects.TemplateBody
 import br.com.olympus.hermes.shared.domain.valueobjects.TemplateName
 import io.mockk.every
 import io.mockk.mockk
-import java.util.Date
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.Date
 
 class GetTemplateQueryHandlerTest {
     private lateinit var repository: TemplateRepository
@@ -25,15 +25,15 @@ class GetTemplateQueryHandlerTest {
     }
 
     private fun makeTemplate(): NotificationTemplate =
-            NotificationTemplate(
-                    name = TemplateName.create("welcome-email").getOrNull()!!,
-                    channel = NotificationType.EMAIL,
-                    subject = "Welcome!",
-                    body = TemplateBody.create("Hello {{name}}.").getOrNull()!!,
-                    description = null,
-                    createdAt = Date(),
-                    updatedAt = Date(),
-            )
+        NotificationTemplate(
+            name = TemplateName.create("welcome-email").getOrNull()!!,
+            channel = NotificationType.EMAIL,
+            subject = "Welcome!",
+            body = TemplateBody.create("Hello {{name}}.").getOrNull()!!,
+            description = null,
+            createdAt = Date(),
+            updatedAt = Date(),
+        )
 
     @Test
     fun `should return template when found`() {

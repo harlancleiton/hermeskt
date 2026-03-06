@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.raise.either
 import br.com.olympus.hermes.shared.domain.events.EmailNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.NotificationDeliveredEvent
+import br.com.olympus.hermes.shared.domain.events.NotificationDeliveryFailedEvent
 import br.com.olympus.hermes.shared.domain.events.NotificationSeenEvent
 import br.com.olympus.hermes.shared.domain.events.NotificationSentEvent
 import br.com.olympus.hermes.shared.domain.events.PushNotificationCreatedEvent
@@ -216,6 +217,40 @@ object NotificationDeliveredCodec : EventPayloadCodec<NotificationDeliveredEvent
             }
 }
 
+/** [EventPayloadCodec] for [NotificationDeliveryFailedEvent]. */
+object NotificationDeliveryFailedCodec : EventPayloadCodec<NotificationDeliveryFailedEvent> {
+    override val eventType = "NotificationDeliveryFailedEvent"
+
+    override fun serialize(event: NotificationDeliveryFailedEvent): Map<String, Any?> =
+        mapOf(
+            "aggregateId" to event.aggregateId,
+            "reason" to event.reason,
+            "failedAt" to event.failedAt.time,
+        )
+
+    override fun deserialize(
+        data: Map<String, Any>,
+        aggregateId: String,
+    ): Either<BaseError, NotificationDeliveryFailedEvent> =
+        Either
+            .catch {
+                NotificationDeliveryFailedEvent(
+                    aggregateId = data["aggregateId"] as? String ?: aggregateId,
+                    reason = data["reason"] as? String ?: "",
+                    failedAt =
+                        Date(
+                            (data["failedAt"] as? Number)?.toLong()
+                                ?: System.currentTimeMillis(),
+                        ),
+                )
+            }.mapLeft {
+                PersistenceError(
+                    "Failed to deserialize NotificationDeliveryFailedEvent",
+                    it,
+                )
+            }
+}
+
 /**
  * Builds and returns an [EventPayloadCodecRegistry] pre-populated with all known domain event
  * codecs.
@@ -232,4 +267,5 @@ fun defaultEventPayloadCodecRegistry(): EventPayloadCodecRegistry =
         register(NotificationSentCodec)
         register(NotificationSeenCodec)
         register(NotificationDeliveredCodec)
+        register(NotificationDeliveryFailedCodec)
     }

@@ -13,6 +13,12 @@ data class NotificationSentEvent(
     val sentAt: Date = Date(),
 ) : DomainEvent
 
+data class NotificationDeliveryFailedEvent(
+    val aggregateId: String,
+    val reason: String,
+    val failedAt: Date = Date(),
+) : DomainEvent
+
 data class NotificationSeenEvent(
     val seenAt: Date = Date(),
 ) : DomainEvent

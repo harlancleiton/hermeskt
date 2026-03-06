@@ -4,6 +4,8 @@ import br.com.olympus.hermes.shared.domain.events.DomainEvent
 import br.com.olympus.hermes.shared.domain.events.EmailNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.EventWrapper
 import br.com.olympus.hermes.shared.domain.events.NotificationCreatedEvent
+import br.com.olympus.hermes.shared.domain.events.NotificationDeliveryFailedEvent
+import br.com.olympus.hermes.shared.domain.events.NotificationSentEvent
 import br.com.olympus.hermes.shared.domain.events.PushNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.SMSNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.WhatsAppNotificationCreatedEvent
@@ -110,12 +112,17 @@ data class KafkaEventWrapper(
                 }
                 "PushNotificationCreatedEvent" -> {
                     val deviceToken =
-                        DeviceToken.create(p["deviceToken"] as? String ?: return null).getOrNull() ?: return null
+                        DeviceToken
+                            .create(p["deviceToken"] as? String ?: return null)
+                            .getOrNull()
+                            ?: return null
                     val title = p["title"] as? String ?: return null
 
                     @Suppress("UNCHECKED_CAST")
                     val data =
-                        (p["data"] as? Map<*, *>)?.mapKeys { it.key as String }?.mapValues { it.value as String }
+                        (p["data"] as? Map<*, *>)?.mapKeys { it.key as String }?.mapValues {
+                            it.value as String
+                        }
                             ?: emptyMap()
                     PushNotificationCreatedEvent(
                         aggregateId = aggregateId,
@@ -128,6 +135,41 @@ data class KafkaEventWrapper(
                 }
                 else -> null
             }
+        }
+
+        /**
+         * Reconstructs a [NotificationSentEvent] from this wrapper's flat [payload] map. Also
+         * recovers the `aggregateId` embedded in the payload by [from]. Returns null if the
+         * [eventType] does not match.
+         *
+         * @return The reconstructed event (with aggregateId in [KafkaEventWrapper.payload]) or
+         * null.
+         */
+        fun KafkaEventWrapper.toNotificationSentEvent(): NotificationSentEvent? {
+            if (eventType != "NotificationSentEvent") return null
+            val p = payload
+            val shippingReceipt = p["shippingReceipt"] ?: return null
+            val sentAt = (p["sentAt"] as? Number)?.toLong()?.let { Date(it) } ?: return null
+            return NotificationSentEvent(shippingReceipt = shippingReceipt, sentAt = sentAt)
+        }
+
+        /**
+         * Reconstructs a [NotificationDeliveryFailedEvent] from this wrapper's flat [payload] map.
+         * Returns null if the [eventType] does not match.
+         *
+         * @return The reconstructed event or null.
+         */
+        fun KafkaEventWrapper.toNotificationDeliveryFailedEvent(): NotificationDeliveryFailedEvent? {
+            if (eventType != "NotificationDeliveryFailedEvent") return null
+            val p = payload
+            val aggregateId = p["aggregateId"] as? String ?: return null
+            val reason = p["reason"] as? String ?: return null
+            val failedAt = (p["failedAt"] as? Number)?.toLong()?.let { Date(it) } ?: Date()
+            return NotificationDeliveryFailedEvent(
+                aggregateId = aggregateId,
+                reason = reason,
+                failedAt = failedAt,
+            )
         }
     }
 }
@@ -169,6 +211,18 @@ private fun DomainEvent.toMap(aggregateId: String = ""): Map<String, Any?> =
                 "deviceToken" to deviceToken.value,
                 "title" to title,
                 "data" to data,
+            )
+        is NotificationSentEvent ->
+            mapOf(
+                "aggregateId" to aggregateId,
+                "shippingReceipt" to shippingReceipt,
+                "sentAt" to sentAt.time,
+            )
+        is NotificationDeliveryFailedEvent ->
+            mapOf(
+                "aggregateId" to this.aggregateId,
+                "reason" to reason,
+                "failedAt" to failedAt.time,
             )
         else -> emptyMap()
     }

@@ -12,10 +12,10 @@ import br.com.olympus.hermes.shared.domain.valueobjects.TemplateBody
 import br.com.olympus.hermes.shared.domain.valueobjects.TemplateName
 import io.mockk.every
 import io.mockk.mockk
-import java.util.Date
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.Date
 
 class TemplateEngineTest {
     private lateinit var repository: TemplateRepository
@@ -29,20 +29,20 @@ class TemplateEngineTest {
     }
 
     private fun makeTemplate(
-            body: String,
-            subject: String? = null,
-            channel: NotificationType = NotificationType.EMAIL,
-            name: String = "test-template",
+        body: String,
+        subject: String? = null,
+        channel: NotificationType = NotificationType.EMAIL,
+        name: String = "test-template",
     ): NotificationTemplate =
-            NotificationTemplate(
-                    name = TemplateName.create(name).getOrNull()!!,
-                    channel = channel,
-                    subject = subject,
-                    body = TemplateBody.create(body).getOrNull()!!,
-                    description = null,
-                    createdAt = Date(),
-                    updatedAt = Date(),
-            )
+        NotificationTemplate(
+            name = TemplateName.create(name).getOrNull()!!,
+            channel = channel,
+            subject = subject,
+            body = TemplateBody.create(body).getOrNull()!!,
+            description = null,
+            createdAt = Date(),
+            updatedAt = Date(),
+        )
 
     @Test
     fun `resolve should interpolate all placeholders`() {
@@ -50,11 +50,11 @@ class TemplateEngineTest {
         every { repository.findByNameAndChannel(any(), any()) } returns template.right()
 
         val result =
-                engine.resolve(
-                        TemplateName.create("test-template").getOrNull()!!,
-                        NotificationType.EMAIL,
-                        mapOf("name" to "John", "orderId" to "123"),
-                )
+            engine.resolve(
+                TemplateName.create("test-template").getOrNull()!!,
+                NotificationType.EMAIL,
+                mapOf("name" to "John", "orderId" to "123"),
+            )
 
         assert(result.isRight())
         result.onRight { assertEquals("Hello John, order 123 confirmed.", it.body) }
@@ -66,11 +66,11 @@ class TemplateEngineTest {
         every { repository.findByNameAndChannel(any(), any()) } returns template.right()
 
         val result =
-                engine.resolve(
-                        TemplateName.create("test-template").getOrNull()!!,
-                        NotificationType.EMAIL,
-                        mapOf("name" to "John", "orderId" to "42"),
-                )
+            engine.resolve(
+                TemplateName.create("test-template").getOrNull()!!,
+                NotificationType.EMAIL,
+                mapOf("name" to "John", "orderId" to "42"),
+            )
 
         assert(result.isRight())
         result.onRight {
@@ -84,11 +84,11 @@ class TemplateEngineTest {
         every { repository.findByNameAndChannel(any(), any()) } returns null.right()
 
         val result =
-                engine.resolve(
-                        TemplateName.create("nonexistent").getOrNull()!!,
-                        NotificationType.SMS,
-                        emptyMap(),
-                )
+            engine.resolve(
+                TemplateName.create("nonexistent").getOrNull()!!,
+                NotificationType.SMS,
+                emptyMap(),
+            )
 
         assert(result.isLeft())
         result.onLeft { assert(it is TemplateNotFoundError) }
@@ -100,11 +100,11 @@ class TemplateEngineTest {
         every { repository.findByNameAndChannel(any(), any()) } returns template.right()
 
         val result =
-                engine.resolve(
-                        TemplateName.create("test-template").getOrNull()!!,
-                        NotificationType.EMAIL,
-                        mapOf("name" to "John"),
-                )
+            engine.resolve(
+                TemplateName.create("test-template").getOrNull()!!,
+                NotificationType.EMAIL,
+                mapOf("name" to "John"),
+            )
 
         assert(result.isLeft())
         result.onLeft {
@@ -120,11 +120,11 @@ class TemplateEngineTest {
         every { repository.findByNameAndChannel(any(), any()) } returns template.right()
 
         val result =
-                engine.resolve(
-                        TemplateName.create("test-template").getOrNull()!!,
-                        NotificationType.SMS,
-                        emptyMap(),
-                )
+            engine.resolve(
+                TemplateName.create("test-template").getOrNull()!!,
+                NotificationType.SMS,
+                emptyMap(),
+            )
 
         assert(result.isLeft())
         result.onLeft {
@@ -142,11 +142,11 @@ class TemplateEngineTest {
         every { repository.findByNameAndChannel(any(), any()) } returns template.right()
 
         val result =
-                engine.resolve(
-                        TemplateName.create("test-template").getOrNull()!!,
-                        NotificationType.EMAIL,
-                        mapOf("name" to "John", "extra" to "ignored", "anotherExtra" to 42),
-                )
+            engine.resolve(
+                TemplateName.create("test-template").getOrNull()!!,
+                NotificationType.EMAIL,
+                mapOf("name" to "John", "extra" to "ignored", "anotherExtra" to 42),
+            )
 
         assert(result.isRight())
         result.onRight { assertEquals("Hello John.", it.body) }
@@ -158,11 +158,11 @@ class TemplateEngineTest {
         every { repository.findByNameAndChannel(any(), any()) } returns template.right()
 
         val result =
-                engine.resolve(
-                        TemplateName.create("test-template").getOrNull()!!,
-                        NotificationType.PUSH,
-                        emptyMap(),
-                )
+            engine.resolve(
+                TemplateName.create("test-template").getOrNull()!!,
+                NotificationType.PUSH,
+                emptyMap(),
+            )
 
         assert(result.isRight())
         result.onRight { assertEquals("No variables here.", it.body) }
@@ -174,11 +174,11 @@ class TemplateEngineTest {
         every { repository.findByNameAndChannel(any(), any()) } returns template.right()
 
         val result =
-                engine.resolve(
-                        TemplateName.create("test-template").getOrNull()!!,
-                        NotificationType.EMAIL,
-                        mapOf("user.name" to "Alice", "order.id" to "999"),
-                )
+            engine.resolve(
+                TemplateName.create("test-template").getOrNull()!!,
+                NotificationType.EMAIL,
+                mapOf("user.name" to "Alice", "order.id" to "999"),
+            )
 
         assert(result.isRight())
         result.onRight { assertEquals("Hello Alice, order 999.", it.body) }
@@ -191,11 +191,11 @@ class TemplateEngineTest {
         every { repository.findByNameAndChannel(any(), any()) } returns template.right()
 
         val result =
-                engine.resolve(
-                        TemplateName.create("test-template").getOrNull()!!,
-                        NotificationType.EMAIL,
-                        emptyMap(),
-                )
+            engine.resolve(
+                TemplateName.create("test-template").getOrNull()!!,
+                NotificationType.EMAIL,
+                emptyMap(),
+            )
 
         assert(result.isRight())
         result.onRight { assertEquals("Price: {{ special }}", it.body) }
@@ -204,14 +204,14 @@ class TemplateEngineTest {
     @Test
     fun `resolve should propagate repository errors`() {
         every { repository.findByNameAndChannel(any(), any()) } returns
-                PersistenceError("DB down").left()
+            PersistenceError("DB down").left()
 
         val result =
-                engine.resolve(
-                        TemplateName.create("test-template").getOrNull()!!,
-                        NotificationType.EMAIL,
-                        emptyMap(),
-                )
+            engine.resolve(
+                TemplateName.create("test-template").getOrNull()!!,
+                NotificationType.EMAIL,
+                emptyMap(),
+            )
 
         assert(result.isLeft())
         result.onLeft { assert(it is PersistenceError) }

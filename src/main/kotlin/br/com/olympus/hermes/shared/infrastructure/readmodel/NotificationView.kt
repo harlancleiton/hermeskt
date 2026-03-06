@@ -73,4 +73,8 @@ class NotificationView : PanacheMongoEntityBase() {
     /** Timestamp when the notification was seen by the recipient. Null if not yet seen. */
     @BsonProperty("seenAt")
     var seenAt: Date? = null
+
+    /** Reason the delivery failed. Null if no failure has occurred. */
+    @BsonProperty("failureReason")
+    var failureReason: String? = null
 }

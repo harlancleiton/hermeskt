@@ -10,10 +10,10 @@ import br.com.olympus.hermes.shared.domain.valueobjects.TemplateName
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.Date
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.Date
 
 class CreateTemplateHandlerTest {
     private lateinit var repository: TemplateRepository
@@ -26,15 +26,15 @@ class CreateTemplateHandlerTest {
     }
 
     private fun makeTemplate(name: String = "welcome-email"): NotificationTemplate =
-            NotificationTemplate(
-                    name = TemplateName.create(name).getOrNull()!!,
-                    channel = NotificationType.EMAIL,
-                    subject = "Welcome!",
-                    body = TemplateBody.create("Hello {{name}}.").getOrNull()!!,
-                    description = null,
-                    createdAt = Date(),
-                    updatedAt = Date(),
-            )
+        NotificationTemplate(
+            name = TemplateName.create(name).getOrNull()!!,
+            channel = NotificationType.EMAIL,
+            subject = "Welcome!",
+            body = TemplateBody.create("Hello {{name}}.").getOrNull()!!,
+            description = null,
+            createdAt = Date(),
+            updatedAt = Date(),
+        )
 
     @Test
     fun `should create template successfully`() {
@@ -43,13 +43,13 @@ class CreateTemplateHandlerTest {
         every { repository.save(any()) } returns template.right()
 
         val command =
-                CreateTemplateCommand(
-                        name = "welcome-email",
-                        channel = "EMAIL",
-                        subject = "Welcome!",
-                        body = "Hello {{name}}.",
-                        description = null,
-                )
+            CreateTemplateCommand(
+                name = "welcome-email",
+                channel = "EMAIL",
+                subject = "Welcome!",
+                body = "Hello {{name}}.",
+                description = null,
+            )
 
         val result = handler.handle(command)
 
@@ -62,13 +62,13 @@ class CreateTemplateHandlerTest {
         every { repository.existsByNameAndChannel(any(), any()) } returns true.right()
 
         val command =
-                CreateTemplateCommand(
-                        name = "welcome-email",
-                        channel = "EMAIL",
-                        subject = "Welcome!",
-                        body = "Hello {{name}}.",
-                        description = null,
-                )
+            CreateTemplateCommand(
+                name = "welcome-email",
+                channel = "EMAIL",
+                subject = "Welcome!",
+                body = "Hello {{name}}.",
+                description = null,
+            )
 
         val result = handler.handle(command)
 
@@ -80,13 +80,13 @@ class CreateTemplateHandlerTest {
     @Test
     fun `should validate TemplateName and TemplateBody VOs`() {
         val command =
-                CreateTemplateCommand(
-                        name = "INVALID NAME!!",
-                        channel = "EMAIL",
-                        subject = null,
-                        body = "",
-                        description = null,
-                )
+            CreateTemplateCommand(
+                name = "INVALID NAME!!",
+                channel = "EMAIL",
+                subject = null,
+                body = "",
+                description = null,
+            )
 
         val result = handler.handle(command)
 
