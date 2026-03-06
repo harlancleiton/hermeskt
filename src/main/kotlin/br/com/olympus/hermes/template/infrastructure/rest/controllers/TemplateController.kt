@@ -1,9 +1,8 @@
 package br.com.olympus.hermes.template.infrastructure.rest.controllers
 
-import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainExceptionMapper
-
 import br.com.olympus.hermes.shared.domain.exceptions.TemplateNotFoundError
 import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainException
+import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainExceptionMapper
 import br.com.olympus.hermes.shared.infrastructure.rest.extensions.getOrThrowDomain
 import br.com.olympus.hermes.template.application.commands.CreateTemplateHandler
 import br.com.olympus.hermes.template.application.commands.DeleteTemplateCommand

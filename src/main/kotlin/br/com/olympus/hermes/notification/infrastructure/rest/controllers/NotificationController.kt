@@ -1,7 +1,5 @@
 package br.com.olympus.hermes.notification.infrastructure.rest.controllers
 
-import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainExceptionMapper
-
 import br.com.olympus.hermes.notification.application.commands.CreateNotificationHandler
 import br.com.olympus.hermes.notification.application.queries.GetNotificationQuery
 import br.com.olympus.hermes.notification.application.queries.GetNotificationQueryHandler
@@ -17,6 +15,7 @@ import br.com.olympus.hermes.notification.infrastructure.rest.response.Paginated
 import br.com.olympus.hermes.shared.domain.exceptions.InvalidNotificationTypeError
 import br.com.olympus.hermes.shared.domain.exceptions.NotificationNotFoundError
 import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainException
+import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainExceptionMapper
 import br.com.olympus.hermes.shared.infrastructure.rest.extensions.getOrThrowDomain
 import jakarta.ws.rs.Consumes
 import jakarta.ws.rs.DefaultValue

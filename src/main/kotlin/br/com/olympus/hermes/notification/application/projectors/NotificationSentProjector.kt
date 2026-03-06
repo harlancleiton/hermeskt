@@ -1,7 +1,5 @@
 package br.com.olympus.hermes.notification.application.projectors
 
-import br.com.olympus.hermes.shared.infrastructure.messaging.KafkaEventWrapper
-
 import arrow.core.Either
 import arrow.core.raise.either
 import br.com.olympus.hermes.notification.domain.events.*

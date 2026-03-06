@@ -1,7 +1,5 @@
 package br.com.olympus.hermes.shared.domain.exceptions
 
-import br.com.olympus.hermes.shared.application.cqrs.Query
-
 import br.com.olympus.hermes.notification.domain.factories.NotificationType
 
 /**
