@@ -1,9 +1,9 @@
 package br.com.olympus.hermes.notification.infrastructure.providers
 
 import br.com.olympus.hermes.notification.domain.entities.EmailNotification
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
 import br.com.olympus.hermes.notification.domain.valueobjects.Email
 import br.com.olympus.hermes.notification.domain.valueobjects.EmailSubject
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.DeliveryError
 import io.mockk.every
 import io.mockk.mockk

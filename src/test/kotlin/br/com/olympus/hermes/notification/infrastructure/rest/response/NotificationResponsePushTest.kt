@@ -1,7 +1,7 @@
 package br.com.olympus.hermes.notification.infrastructure.rest.response
 
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
 import br.com.olympus.hermes.notification.infrastructure.readmodel.NotificationView
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.Date

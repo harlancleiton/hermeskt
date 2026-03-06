@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import br.com.olympus.hermes.notification.domain.entities.Notification
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.FactoryAlreadyRegisteredError
 import br.com.olympus.hermes.shared.domain.exceptions.FactoryNotFoundError

@@ -1,6 +1,6 @@
 package br.com.olympus.hermes.notification.application.ports
 
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.ProviderAdapterNotFoundError
 import io.mockk.every
 import io.mockk.mockk

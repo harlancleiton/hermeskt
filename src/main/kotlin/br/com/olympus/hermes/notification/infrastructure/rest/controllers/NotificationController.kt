@@ -5,13 +5,13 @@ import br.com.olympus.hermes.notification.application.queries.GetNotificationQue
 import br.com.olympus.hermes.notification.application.queries.GetNotificationQueryHandler
 import br.com.olympus.hermes.notification.application.queries.ListNotificationsQuery
 import br.com.olympus.hermes.notification.application.queries.ListNotificationsQueryHandler
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
 import br.com.olympus.hermes.notification.infrastructure.rest.request.CreateEmailNotificationRequest
 import br.com.olympus.hermes.notification.infrastructure.rest.request.CreatePushNotificationRequest
 import br.com.olympus.hermes.notification.infrastructure.rest.request.CreateSmsNotificationRequest
 import br.com.olympus.hermes.notification.infrastructure.rest.request.CreateWhatsAppNotificationRequest
 import br.com.olympus.hermes.notification.infrastructure.rest.response.NotificationViewResponse
 import br.com.olympus.hermes.notification.infrastructure.rest.response.PaginatedNotificationResponse
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.InvalidNotificationTypeError
 import br.com.olympus.hermes.shared.domain.exceptions.NotificationNotFoundError
 import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainException

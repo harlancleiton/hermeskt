@@ -3,7 +3,7 @@ package br.com.olympus.hermes.template.infrastructure.readmodel
 import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.raise.either
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.PersistenceError
 import br.com.olympus.hermes.template.domain.entities.NotificationTemplate

@@ -1,6 +1,6 @@
 package br.com.olympus.hermes.shared.domain.exceptions
 
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 
 /**
  * Sealed interface representing all domain errors in the system. All error types must extend this

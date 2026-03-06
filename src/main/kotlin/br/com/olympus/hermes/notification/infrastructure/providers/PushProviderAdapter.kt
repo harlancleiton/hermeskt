@@ -4,8 +4,8 @@ import arrow.core.Either
 import br.com.olympus.hermes.notification.application.ports.NotificationProviderAdapter
 import br.com.olympus.hermes.notification.domain.entities.Notification
 import br.com.olympus.hermes.notification.domain.entities.PushNotification
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
 import br.com.olympus.hermes.notification.domain.valueobjects.ProviderReceipt
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.DeliveryError
 import com.google.auth.oauth2.GoogleCredentials

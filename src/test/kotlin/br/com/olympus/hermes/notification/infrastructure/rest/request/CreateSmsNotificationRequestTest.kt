@@ -1,7 +1,7 @@
 package br.com.olympus.hermes.notification.infrastructure.rest.request
 
 import br.com.olympus.hermes.notification.application.commands.CreateNotificationCommand
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

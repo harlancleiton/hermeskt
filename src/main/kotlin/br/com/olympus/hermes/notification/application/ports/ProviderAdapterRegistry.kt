@@ -3,7 +3,7 @@ package br.com.olympus.hermes.notification.application.ports
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.ProviderAdapterNotFoundError
 import jakarta.enterprise.context.ApplicationScoped

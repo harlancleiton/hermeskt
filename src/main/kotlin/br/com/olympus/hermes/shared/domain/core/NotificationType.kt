@@ -1,4 +1,4 @@
-package br.com.olympus.hermes.notification.domain.factories
+package br.com.olympus.hermes.shared.domain.core
 
 /**
  * Enumeration of supported notification types in the system. Each type corresponds to a different

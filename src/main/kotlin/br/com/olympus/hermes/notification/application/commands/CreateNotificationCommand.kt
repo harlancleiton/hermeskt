@@ -1,8 +1,8 @@
 package br.com.olympus.hermes.notification.application.commands
 
 import br.com.olympus.hermes.notification.domain.factories.CreateNotificationInput
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
 import br.com.olympus.hermes.shared.application.cqrs.Command
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import java.util.UUID
 
 /**

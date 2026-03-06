@@ -4,10 +4,10 @@ import arrow.core.Either
 import arrow.core.raise.either
 import br.com.olympus.hermes.notification.domain.entities.Notification
 import br.com.olympus.hermes.notification.domain.factories.NotificationFactoryRegistry
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
 import br.com.olympus.hermes.notification.domain.repositories.NotificationRepository
 import br.com.olympus.hermes.shared.application.cqrs.CommandHandler
 import br.com.olympus.hermes.shared.application.ports.DomainEventPublisher
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.template.domain.services.TemplateEngine
 import br.com.olympus.hermes.template.domain.valueobjects.TemplateName

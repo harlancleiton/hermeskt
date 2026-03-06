@@ -2,8 +2,8 @@ package br.com.olympus.hermes.notification.infrastructure.providers
 
 import arrow.core.Either
 import br.com.olympus.hermes.notification.domain.entities.PushNotification
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
 import br.com.olympus.hermes.notification.domain.valueobjects.DeviceToken
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.DeliveryError
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import com.google.auth.oauth2.GoogleCredentials

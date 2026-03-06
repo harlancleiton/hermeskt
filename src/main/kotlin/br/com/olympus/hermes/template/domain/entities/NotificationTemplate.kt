@@ -1,6 +1,6 @@
 package br.com.olympus.hermes.template.domain.entities
 
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.template.domain.valueobjects.TemplateBody
 import br.com.olympus.hermes.template.domain.valueobjects.TemplateName
 import java.time.Instant

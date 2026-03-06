@@ -1,7 +1,7 @@
 package br.com.olympus.hermes.template.application.queries
 
 import arrow.core.right
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.template.domain.entities.NotificationTemplate
 import br.com.olympus.hermes.template.domain.repositories.TemplateRepository
 import br.com.olympus.hermes.template.domain.valueobjects.TemplateBody

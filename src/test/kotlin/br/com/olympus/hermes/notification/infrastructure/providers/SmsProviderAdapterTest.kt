@@ -1,8 +1,8 @@
 package br.com.olympus.hermes.notification.infrastructure.providers
 
 import br.com.olympus.hermes.notification.domain.entities.SmsNotification
-import br.com.olympus.hermes.notification.domain.factories.NotificationType
 import br.com.olympus.hermes.notification.domain.valueobjects.BrazilianPhone
+import br.com.olympus.hermes.shared.domain.core.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.DeliveryError
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import com.twilio.Twilio
