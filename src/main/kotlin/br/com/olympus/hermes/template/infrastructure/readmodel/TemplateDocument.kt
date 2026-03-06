@@ -1,12 +1,13 @@
 package br.com.olympus.hermes.template.infrastructure.readmodel
 
+import io.quarkus.mongodb.panache.common.MongoEntity
 import io.quarkus.mongodb.panache.kotlin.PanacheMongoCompanion
 import io.quarkus.mongodb.panache.kotlin.PanacheMongoEntityBase
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.codecs.pojo.annotations.BsonProperty
 import java.util.Date
 
-@io.quarkus.mongodb.panache.common.MongoEntity(collection = "templates")
+@MongoEntity(collection = "templates")
 class TemplateDocument : PanacheMongoEntityBase() {
     companion object : PanacheMongoCompanion<TemplateDocument>
 
