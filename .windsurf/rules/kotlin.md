@@ -1,5 +1,6 @@
 ---
-trigger: model_decision
+trigger: glob
+globs: *.kt
 description: Kotlin — General Coding Instructions
 ---
 
@@ -1141,5 +1142,3 @@ data class User(val id: String, var name: String, var age: Int)
 - **Style Guide**: [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html)
 - **Coroutines Guide**: [kotlinlang.org/docs/coroutines-guide.html](https://kotlinlang.org/docs/coroutines-guide.html)
 - **Arrow-kt**: [arrow-kt.io](https://arrow-kt.io) (functional programming library)
-
----
