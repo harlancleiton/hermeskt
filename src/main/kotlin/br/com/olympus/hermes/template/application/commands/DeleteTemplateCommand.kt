@@ -9,6 +9,6 @@ import br.com.olympus.hermes.shared.application.cqrs.Command
  * @param channel The notification channel the template belongs to.
  */
 data class DeleteTemplateCommand(
-        val name: String,
-        val channel: String,
+    val name: String,
+    val channel: String,
 ) : Command

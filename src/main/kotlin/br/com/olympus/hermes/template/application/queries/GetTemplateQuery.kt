@@ -10,6 +10,6 @@ import br.com.olympus.hermes.template.domain.entities.NotificationTemplate
  * @param channel The notification channel the template belongs to.
  */
 data class GetTemplateQuery(
-        val name: String,
-        val channel: String,
+    val name: String,
+    val channel: String,
 ) : Query<NotificationTemplate?>

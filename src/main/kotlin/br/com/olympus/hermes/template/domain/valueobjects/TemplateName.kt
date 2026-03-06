@@ -14,8 +14,9 @@ import br.com.olympus.hermes.shared.domain.exceptions.InvalidTemplateNameError
  * @param value The raw string name.
  */
 @JvmInline
-value class TemplateName private constructor(val value: String) {
-
+value class TemplateName private constructor(
+    val value: String,
+) {
     companion object {
         private const val MAX_LENGTH = 128
         private val SLUG_REGEX = "^[a-z0-9]+(-[a-z0-9]+)*$".toRegex()
@@ -27,12 +28,13 @@ value class TemplateName private constructor(val value: String) {
          * @return [Either.Right] with the [TemplateName] if valid, or [Either.Left] with an error
          * if invalid.
          */
-        fun create(value: String): Either<InvalidTemplateNameError, TemplateName> = either {
-            val trimmed = value.trim()
-            ensure(trimmed.isNotEmpty()) { InvalidTemplateNameError(value) }
-            ensure(trimmed.length <= MAX_LENGTH) { InvalidTemplateNameError(value) }
-            ensure(SLUG_REGEX.matches(trimmed)) { InvalidTemplateNameError(value) }
-            TemplateName(trimmed)
-        }
+        fun create(value: String): Either<InvalidTemplateNameError, TemplateName> =
+            either {
+                val trimmed = value.trim()
+                ensure(trimmed.isNotEmpty()) { InvalidTemplateNameError(value) }
+                ensure(trimmed.length <= MAX_LENGTH) { InvalidTemplateNameError(value) }
+                ensure(SLUG_REGEX.matches(trimmed)) { InvalidTemplateNameError(value) }
+                TemplateName(trimmed)
+            }
     }
 }

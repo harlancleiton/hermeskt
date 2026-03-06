@@ -11,7 +11,7 @@ import br.com.olympus.hermes.template.domain.entities.NotificationTemplate
  * @param size Number of results per page.
  */
 data class ListTemplatesQuery(
-        val channel: String?,
-        val page: Int,
-        val size: Int,
+    val channel: String?,
+    val page: Int,
+    val size: Int,
 ) : Query<List<NotificationTemplate>>

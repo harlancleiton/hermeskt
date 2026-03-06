@@ -1,0 +1,147 @@
+package br.com.olympus.hermes.notification.infrastructure.persistence
+
+import arrow.core.Either
+import arrow.core.raise.either
+import arrow.core.right
+import br.com.olympus.hermes.notification.domain.repositories.EventStore
+import br.com.olympus.hermes.shared.config.EventStoreTable
+import br.com.olympus.hermes.shared.domain.events.EventWrapper
+import br.com.olympus.hermes.shared.domain.exceptions.BaseError
+import br.com.olympus.hermes.shared.domain.exceptions.PersistenceError
+import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
+import jakarta.enterprise.context.ApplicationScoped
+import jakarta.inject.Inject
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable
+import software.amazon.awssdk.enhanced.dynamodb.Key
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException
+import software.amazon.awssdk.services.dynamodb.model.Put
+import software.amazon.awssdk.services.dynamodb.model.TransactWriteItem
+import software.amazon.awssdk.services.dynamodb.model.TransactWriteItemsRequest
+import java.util.Date
+
+/**
+ * DynamoDB implementation of [EventStore]. Persists domain events as individual items in a DynamoDB
+ * table using:
+ * - **PK** = aggregate ID
+ * - **SK** = zero-padded version (ensures chronological ordering)
+ *
+ * Uses DynamoDB transactions with condition expressions for optimistic concurrency control.
+ */
+@ApplicationScoped
+class DynamoDbEventStore
+    @Inject
+    constructor(
+        @param:EventStoreTable private val table: DynamoDbTable<EventRecord>,
+        private val dynamoDbClient: DynamoDbClient,
+        private val serde: DomainEventSerde,
+    ) : EventStore {
+        override fun append(
+            aggregateId: EntityId,
+            events: List<EventWrapper>,
+            expectedVersion: Int,
+        ): Either<BaseError, Unit> {
+            if (events.isEmpty()) return Unit.right()
+
+            val tableName = table.tableName()
+            return either {
+                val items =
+                    events.map { envelope ->
+                        val record = toRecord(envelope).bind()
+                        TransactWriteItem
+                            .builder()
+                            .put(
+                                Put
+                                    .builder()
+                                    .tableName(tableName)
+                                    .item(toAttributeMap(record))
+                                    .conditionExpression(
+                                        "attribute_not_exists(PK) AND attribute_not_exists(SK)",
+                                    ).build(),
+                            ).build()
+                    }
+                Either
+                    .catch {
+                        dynamoDbClient.transactWriteItems(
+                            TransactWriteItemsRequest.builder().transactItems(items).build(),
+                        )
+                    }.mapLeft { ex ->
+                        when (ex) {
+                            is ConditionalCheckFailedException ->
+                                PersistenceError(
+                                    "Optimistic concurrency conflict for aggregate ${aggregateId.value} at version $expectedVersion",
+                                    ex,
+                                )
+                            else -> PersistenceError(ex.message ?: "Unknown error", ex)
+                        }
+                    }.bind()
+            }
+        }
+
+        override fun getEvents(aggregateId: EntityId): Either<BaseError, List<EventWrapper>> {
+            val condition =
+                QueryConditional.keyEqualTo(
+                    Key.builder().partitionValue(aggregateId.value.toString()).build(),
+                )
+            return queryAndDeserialize(condition)
+        }
+
+        private fun queryAndDeserialize(condition: QueryConditional): Either<BaseError, List<EventWrapper>> =
+            either {
+                val records =
+                    Either
+                        .catch { table.query(condition).items().toList() }
+                        .mapLeft<BaseError> { PersistenceError(it.message ?: "Unknown error", it) }
+                        .bind()
+
+                records.map { record -> fromRecord(record).bind() }
+            }
+
+        private fun toRecord(envelope: EventWrapper): Either<BaseError, EventRecord> =
+            either {
+                val record = EventRecord()
+                record.pk = envelope.aggregateId.value.toString()
+                record.sk = EventRecord.sortKey(envelope.aggregateVersion)
+                record.eventId = envelope.eventId.value.toString()
+                record.eventType = envelope.eventType
+                record.aggregateType = envelope.aggregateType
+                record.data = serde.serialize(envelope.payload).bind()
+                record.occurredAt = envelope.occurredAt.time
+                record.version = envelope.aggregateVersion
+                record
+            }
+
+        private fun fromRecord(record: EventRecord): Either<BaseError, EventWrapper> =
+            either {
+                val eventId = EntityId.from(record.eventId).bind()
+                val aggregateId = EntityId.from(record.pk).bind()
+                serde
+                    .deserialize(
+                        eventType = record.eventType,
+                        eventId = eventId,
+                        aggregateId = aggregateId,
+                        aggregateType = record.aggregateType,
+                        version = record.version,
+                        occurredAt = Date(record.occurredAt),
+                        json = record.data,
+                    ).bind()
+            }
+
+        /**
+         * Converts an [EventRecord] bean into a raw DynamoDB attribute map for use in transact write
+         * requests.
+         */
+        private fun toAttributeMap(record: EventRecord): Map<String, AttributeValue> =
+            mapOf(
+                "PK" to AttributeValue.fromS(record.pk),
+                "SK" to AttributeValue.fromS(record.sk),
+                "eventId" to AttributeValue.fromS(record.eventId),
+                "eventType" to AttributeValue.fromS(record.eventType),
+                "aggregateType" to AttributeValue.fromS(record.aggregateType),
+                "data" to AttributeValue.fromS(record.data),
+                "occurredAt" to AttributeValue.fromN(record.occurredAt.toString()),
+                "version" to AttributeValue.fromN(record.version.toString()),
+            )
+    }

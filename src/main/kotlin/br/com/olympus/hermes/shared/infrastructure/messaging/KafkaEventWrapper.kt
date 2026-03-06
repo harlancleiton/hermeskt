@@ -1,18 +1,12 @@
 package br.com.olympus.hermes.shared.infrastructure.messaging
 
+import br.com.olympus.hermes.notification.domain.events.*
+import br.com.olympus.hermes.notification.domain.valueobjects.BrazilianPhone
+import br.com.olympus.hermes.notification.domain.valueobjects.DeviceToken
+import br.com.olympus.hermes.notification.domain.valueobjects.Email
+import br.com.olympus.hermes.notification.domain.valueobjects.EmailSubject
 import br.com.olympus.hermes.shared.domain.events.DomainEvent
-import br.com.olympus.hermes.shared.domain.events.EmailNotificationCreatedEvent
 import br.com.olympus.hermes.shared.domain.events.EventWrapper
-import br.com.olympus.hermes.shared.domain.events.NotificationCreatedEvent
-import br.com.olympus.hermes.shared.domain.events.NotificationDeliveryFailedEvent
-import br.com.olympus.hermes.shared.domain.events.NotificationSentEvent
-import br.com.olympus.hermes.shared.domain.events.PushNotificationCreatedEvent
-import br.com.olympus.hermes.shared.domain.events.SMSNotificationCreatedEvent
-import br.com.olympus.hermes.shared.domain.events.WhatsAppNotificationCreatedEvent
-import br.com.olympus.hermes.shared.domain.valueobjects.BrazilianPhone
-import br.com.olympus.hermes.shared.domain.valueobjects.DeviceToken
-import br.com.olympus.hermes.shared.domain.valueobjects.Email
-import br.com.olympus.hermes.shared.domain.valueobjects.EmailSubject
 import java.util.Date
 
 /**

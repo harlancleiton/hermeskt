@@ -1,8 +1,10 @@
 package br.com.olympus.hermes.template.infrastructure.rest.controllers
 
-import br.com.olympus.hermes.infrastructure.rest.exceptions.DomainException
-import br.com.olympus.hermes.infrastructure.rest.extensions.getOrThrowDomain
+import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainExceptionMapper
+
 import br.com.olympus.hermes.shared.domain.exceptions.TemplateNotFoundError
+import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainException
+import br.com.olympus.hermes.shared.infrastructure.rest.extensions.getOrThrowDomain
 import br.com.olympus.hermes.template.application.commands.CreateTemplateHandler
 import br.com.olympus.hermes.template.application.commands.DeleteTemplateCommand
 import br.com.olympus.hermes.template.application.commands.DeleteTemplateHandler
@@ -41,58 +43,59 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 class TemplateController(
-        private val createTemplateHandler: CreateTemplateHandler,
-        private val updateTemplateHandler: UpdateTemplateHandler,
-        private val deleteTemplateHandler: DeleteTemplateHandler,
-        private val getTemplateQueryHandler: GetTemplateQueryHandler,
-        private val listTemplatesQueryHandler: ListTemplatesQueryHandler,
+    private val createTemplateHandler: CreateTemplateHandler,
+    private val updateTemplateHandler: UpdateTemplateHandler,
+    private val deleteTemplateHandler: DeleteTemplateHandler,
+    private val getTemplateQueryHandler: GetTemplateQueryHandler,
+    private val listTemplatesQueryHandler: ListTemplatesQueryHandler,
 ) {
     @POST
     @Operation(summary = "Create a template")
     @APIResponse(
-            responseCode = "201",
-            description = "Created",
-            content = [Content(schema = Schema(implementation = TemplateResponse::class))],
+        responseCode = "201",
+        description = "Created",
+        content = [Content(schema = Schema(implementation = TemplateResponse::class))],
     )
     fun create(request: CreateTemplateRequest): Response {
         val command = request.toCommand()
         createTemplateHandler.handle(command).getOrThrowDomain()
 
         val template =
-                getTemplateQueryHandler
-                        .handle(GetTemplateQuery(name = command.name, channel = command.channel))
-                        .getOrThrowDomain()
-                        ?: throw DomainException(
-                                TemplateNotFoundError(
-                                        name = command.name,
-                                        channel = command.channel,
-                                ),
-                        )
+            getTemplateQueryHandler
+                .handle(GetTemplateQuery(name = command.name, channel = command.channel))
+                .getOrThrowDomain()
+                ?: throw DomainException(
+                    TemplateNotFoundError(
+                        name = command.name,
+                        channel = command.channel,
+                    ),
+                )
 
-        return Response.status(Response.Status.CREATED)
-                .entity(TemplateResponse.from(template))
-                .build()
+        return Response
+            .status(Response.Status.CREATED)
+            .entity(TemplateResponse.from(template))
+            .build()
     }
 
     @GET
     @Path("/{name}")
     @Operation(summary = "Get a template")
     @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = [Content(schema = Schema(implementation = TemplateResponse::class))],
+        responseCode = "200",
+        description = "OK",
+        content = [Content(schema = Schema(implementation = TemplateResponse::class))],
     )
     fun get(
-            @PathParam("name") name: String,
-            @QueryParam("channel") channel: String,
+        @PathParam("name") name: String,
+        @QueryParam("channel") channel: String,
     ): Response {
         val template =
-                getTemplateQueryHandler
-                        .handle(GetTemplateQuery(name = name, channel = channel))
-                        .getOrThrowDomain()
-                        ?: throw DomainException(
-                                TemplateNotFoundError(name = name, channel = channel),
-                        )
+            getTemplateQueryHandler
+                .handle(GetTemplateQuery(name = name, channel = channel))
+                .getOrThrowDomain()
+                ?: throw DomainException(
+                    TemplateNotFoundError(name = name, channel = channel),
+                )
 
         return Response.ok(TemplateResponse.from(template)).build()
     }
@@ -100,28 +103,27 @@ class TemplateController(
     @GET
     @Operation(summary = "List templates")
     @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = [Content(schema = Schema(implementation = TemplateResponse::class))],
+        responseCode = "200",
+        description = "OK",
+        content = [Content(schema = Schema(implementation = TemplateResponse::class))],
     )
     fun list(
-            @QueryParam("channel") channel: String?,
-            @QueryParam("page") page: Int?,
-            @QueryParam("size") size: Int?,
+        @QueryParam("channel") channel: String?,
+        @QueryParam("page") page: Int?,
+        @QueryParam("size") size: Int?,
     ): Response {
         val resolvedPage = page ?: 0
         val resolvedSize = size ?: 20
 
         val templates =
-                listTemplatesQueryHandler
-                        .handle(
-                                ListTemplatesQuery(
-                                        channel = channel,
-                                        page = resolvedPage,
-                                        size = resolvedSize,
-                                ),
-                        )
-                        .getOrThrowDomain()
+            listTemplatesQueryHandler
+                .handle(
+                    ListTemplatesQuery(
+                        channel = channel,
+                        page = resolvedPage,
+                        size = resolvedSize,
+                    ),
+                ).getOrThrowDomain()
 
         return Response.ok(templates.map { TemplateResponse.from(it) }).build()
     }
@@ -130,27 +132,27 @@ class TemplateController(
     @Path("/{name}")
     @Operation(summary = "Update a template")
     @APIResponse(
-            responseCode = "200",
-            description = "OK",
-            content = [Content(schema = Schema(implementation = TemplateResponse::class))],
+        responseCode = "200",
+        description = "OK",
+        content = [Content(schema = Schema(implementation = TemplateResponse::class))],
     )
     fun update(
-            @PathParam("name") name: String,
-            request: UpdateTemplateRequest,
+        @PathParam("name") name: String,
+        request: UpdateTemplateRequest,
     ): Response {
         val command = request.toCommand(name)
         updateTemplateHandler.handle(command).getOrThrowDomain()
 
         val template =
-                getTemplateQueryHandler
-                        .handle(GetTemplateQuery(name = command.name, channel = command.channel))
-                        .getOrThrowDomain()
-                        ?: throw DomainException(
-                                TemplateNotFoundError(
-                                        name = command.name,
-                                        channel = command.channel,
-                                ),
-                        )
+            getTemplateQueryHandler
+                .handle(GetTemplateQuery(name = command.name, channel = command.channel))
+                .getOrThrowDomain()
+                ?: throw DomainException(
+                    TemplateNotFoundError(
+                        name = command.name,
+                        channel = command.channel,
+                    ),
+                )
 
         return Response.ok(TemplateResponse.from(template)).build()
     }
@@ -160,12 +162,12 @@ class TemplateController(
     @Operation(summary = "Delete a template")
     @APIResponse(responseCode = "204", description = "No Content")
     fun delete(
-            @PathParam("name") name: String,
-            @QueryParam("channel") channel: String,
+        @PathParam("name") name: String,
+        @QueryParam("channel") channel: String,
     ): Response {
         deleteTemplateHandler
-                .handle(DeleteTemplateCommand(name = name, channel = channel))
-                .getOrThrowDomain()
+            .handle(DeleteTemplateCommand(name = name, channel = channel))
+            .getOrThrowDomain()
         return Response.noContent().build()
     }
 }

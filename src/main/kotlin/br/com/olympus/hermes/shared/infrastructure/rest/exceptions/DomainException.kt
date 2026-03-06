@@ -1,4 +1,4 @@
-package br.com.olympus.hermes.infrastructure.rest.exceptions
+package br.com.olympus.hermes.shared.infrastructure.rest.exceptions
 
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 

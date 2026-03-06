@@ -1,7 +1,7 @@
 package br.com.olympus.hermes.shared.config
 
-import br.com.olympus.hermes.shared.infrastructure.persistence.DomainEventSerde
-import br.com.olympus.hermes.shared.infrastructure.persistence.EventRecord
+import br.com.olympus.hermes.notification.infrastructure.persistence.DomainEventSerde
+import br.com.olympus.hermes.notification.infrastructure.persistence.EventRecord
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Qualifier

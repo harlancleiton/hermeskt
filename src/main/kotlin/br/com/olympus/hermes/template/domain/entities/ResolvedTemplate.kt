@@ -7,6 +7,6 @@ package br.com.olympus.hermes.template.domain.entities
  * @param subject The fully interpolated subject line, or null if not applicable.
  */
 data class ResolvedTemplate(
-        val body: String,
-        val subject: String?,
+    val body: String,
+    val subject: String?,
 )

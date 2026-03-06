@@ -12,9 +12,9 @@ import br.com.olympus.hermes.shared.application.cqrs.Command
  * @param description An optional human-readable description of the template's purpose.
  */
 data class CreateTemplateCommand(
-        val name: String,
-        val channel: String,
-        val subject: String?,
-        val body: String,
-        val description: String?,
+    val name: String,
+    val channel: String,
+    val subject: String?,
+    val body: String,
+    val description: String?,
 ) : Command

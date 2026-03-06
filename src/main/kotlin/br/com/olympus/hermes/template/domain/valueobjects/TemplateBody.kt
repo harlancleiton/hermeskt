@@ -11,8 +11,9 @@ import br.com.olympus.hermes.shared.domain.exceptions.InvalidTemplateBodyError
  * @param value The raw string content of the body.
  */
 @JvmInline
-value class TemplateBody private constructor(val value: String) {
-
+value class TemplateBody private constructor(
+    val value: String,
+) {
     companion object {
         private const val MAX_LENGTH = 65536
 
@@ -23,13 +24,14 @@ value class TemplateBody private constructor(val value: String) {
          * @return [Either.Right] with the [TemplateBody] if valid, or [Either.Left] with an error
          * if invalid.
          */
-        fun create(value: String): Either<InvalidTemplateBodyError, TemplateBody> = either {
-            val trimmed = value.trim()
-            ensure(trimmed.isNotEmpty()) { InvalidTemplateBodyError("Body cannot be blank") }
-            ensure(trimmed.length <= MAX_LENGTH) {
-                InvalidTemplateBodyError("Body cannot exceed $MAX_LENGTH characters")
+        fun create(value: String): Either<InvalidTemplateBodyError, TemplateBody> =
+            either {
+                val trimmed = value.trim()
+                ensure(trimmed.isNotEmpty()) { InvalidTemplateBodyError("Body cannot be blank") }
+                ensure(trimmed.length <= MAX_LENGTH) {
+                    InvalidTemplateBodyError("Body cannot exceed $MAX_LENGTH characters")
+                }
+                TemplateBody(trimmed)
             }
-            TemplateBody(trimmed)
-        }
     }
 }

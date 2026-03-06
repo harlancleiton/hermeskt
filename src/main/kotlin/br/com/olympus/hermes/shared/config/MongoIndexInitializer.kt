@@ -4,7 +4,7 @@
 
 package br.com.olympus.hermes.shared.config
 
-import br.com.olympus.hermes.shared.infrastructure.readmodel.NotificationView
+import br.com.olympus.hermes.notification.infrastructure.readmodel.NotificationView
 import io.quarkus.runtime.StartupEvent
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.event.Observes

@@ -16,15 +16,15 @@ class TemplateConfig {
     @Produces
     @Singleton
     fun templateEngine(templateRepository: TemplateRepository): TemplateEngine =
-            TemplateEngine(templateRepository, placeholderRegex.toRegex())
+        TemplateEngine(templateRepository, placeholderRegex.toRegex())
 }
 
 @Qualifier
 @Retention(AnnotationRetention.RUNTIME)
 @Target(
-        AnnotationTarget.CLASS,
-        AnnotationTarget.FIELD,
-        AnnotationTarget.FUNCTION,
-        AnnotationTarget.VALUE_PARAMETER,
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FIELD,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.VALUE_PARAMETER,
 )
 annotation class TemplateMongo

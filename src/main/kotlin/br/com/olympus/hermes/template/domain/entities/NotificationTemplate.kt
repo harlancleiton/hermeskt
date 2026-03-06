@@ -1,6 +1,6 @@
 package br.com.olympus.hermes.template.domain.entities
 
-import br.com.olympus.hermes.shared.domain.factories.NotificationType
+import br.com.olympus.hermes.notification.domain.factories.NotificationType
 import br.com.olympus.hermes.template.domain.valueobjects.TemplateBody
 import br.com.olympus.hermes.template.domain.valueobjects.TemplateName
 import java.time.Instant
@@ -17,11 +17,11 @@ import java.time.Instant
  * @param updatedAt The timestamp when this template was last updated.
  */
 data class NotificationTemplate(
-        val name: TemplateName,
-        val channel: NotificationType,
-        val subject: String?,
-        val body: TemplateBody,
-        val description: String?,
-        val createdAt: Instant = Instant.now(),
-        val updatedAt: Instant = Instant.now(),
+    val name: TemplateName,
+    val channel: NotificationType,
+    val subject: String?,
+    val body: TemplateBody,
+    val description: String?,
+    val createdAt: Instant = Instant.now(),
+    val updatedAt: Instant = Instant.now(),
 )

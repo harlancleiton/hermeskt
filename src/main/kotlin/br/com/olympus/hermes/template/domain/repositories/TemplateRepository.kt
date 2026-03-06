@@ -1,8 +1,8 @@
 package br.com.olympus.hermes.template.domain.repositories
 
 import arrow.core.Either
+import br.com.olympus.hermes.notification.domain.factories.NotificationType
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
-import br.com.olympus.hermes.shared.domain.factories.NotificationType
 import br.com.olympus.hermes.template.domain.entities.NotificationTemplate
 import br.com.olympus.hermes.template.domain.valueobjects.TemplateName
 
@@ -12,7 +12,6 @@ import br.com.olympus.hermes.template.domain.valueobjects.TemplateName
  * Implementations live in the infrastructure layer.
  */
 interface TemplateRepository {
-
     /**
      * Finds a template by its name and channel.
      *
@@ -22,8 +21,8 @@ interface TemplateRepository {
      * error.
      */
     fun findByNameAndChannel(
-            name: TemplateName,
-            channel: NotificationType,
+        name: TemplateName,
+        channel: NotificationType,
     ): Either<BaseError, NotificationTemplate?>
 
     /**
@@ -35,9 +34,9 @@ interface TemplateRepository {
      * @return [Either.Right] with the list of templates, or [Either.Left] with an error.
      */
     fun findAllByChannel(
-            channel: NotificationType?,
-            page: Int,
-            size: Int,
+        channel: NotificationType?,
+        page: Int,
+        size: Int,
     ): Either<BaseError, List<NotificationTemplate>>
 
     /**
@@ -65,8 +64,8 @@ interface TemplateRepository {
      * @return [Either.Right] with true if deleted, or [Either.Left] with an error.
      */
     fun deleteByNameAndChannel(
-            name: TemplateName,
-            channel: NotificationType,
+        name: TemplateName,
+        channel: NotificationType,
     ): Either<BaseError, Boolean>
 
     /**
@@ -77,7 +76,7 @@ interface TemplateRepository {
      * @return [Either.Right] with true if exists, false otherwise, or [Either.Left] with an error.
      */
     fun existsByNameAndChannel(
-            name: TemplateName,
-            channel: NotificationType,
+        name: TemplateName,
+        channel: NotificationType,
     ): Either<BaseError, Boolean>
 }

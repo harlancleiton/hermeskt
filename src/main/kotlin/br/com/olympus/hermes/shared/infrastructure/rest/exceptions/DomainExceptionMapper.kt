@@ -1,12 +1,13 @@
-package br.com.olympus.hermes.infrastructure.rest.exceptions
+package br.com.olympus.hermes.shared.infrastructure.rest.exceptions
 
-import br.com.olympus.hermes.infrastructure.rest.response.ErrorResponse
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
 import br.com.olympus.hermes.shared.domain.exceptions.ClientError
 import br.com.olympus.hermes.shared.domain.exceptions.NotificationNotFoundError
+import br.com.olympus.hermes.shared.domain.exceptions.ServerError
 import br.com.olympus.hermes.shared.domain.exceptions.TemplateDuplicateError
 import br.com.olympus.hermes.shared.domain.exceptions.TemplateNotFoundError
 import br.com.olympus.hermes.shared.domain.exceptions.ValidationErrors
+import br.com.olympus.hermes.shared.infrastructure.rest.response.ErrorResponse
 import io.quarkus.logging.Log
 import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response

@@ -1,5 +1,6 @@
 package br.com.olympus.hermes.shared.domain.events
 
+import br.com.olympus.hermes.notification.domain.events.*
 import br.com.olympus.hermes.shared.domain.valueobjects.EntityId
 import java.util.Date
 

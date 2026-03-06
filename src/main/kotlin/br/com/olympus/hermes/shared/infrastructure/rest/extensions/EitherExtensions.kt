@@ -1,8 +1,10 @@
-package br.com.olympus.hermes.infrastructure.rest.extensions
+package br.com.olympus.hermes.shared.infrastructure.rest.extensions
+
+import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainExceptionMapper
 
 import arrow.core.Either
-import br.com.olympus.hermes.infrastructure.rest.exceptions.DomainException
 import br.com.olympus.hermes.shared.domain.exceptions.BaseError
+import br.com.olympus.hermes.shared.infrastructure.rest.exceptions.DomainException
 
 /**
  * Unwraps the [Either.Right] value or throws a [DomainException] wrapping the [Either.Left] error.

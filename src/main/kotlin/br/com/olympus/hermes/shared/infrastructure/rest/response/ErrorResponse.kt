@@ -1,4 +1,4 @@
-package br.com.olympus.hermes.infrastructure.rest.response
+package br.com.olympus.hermes.shared.infrastructure.rest.response
 
 import com.fasterxml.jackson.annotation.JsonInclude
 
