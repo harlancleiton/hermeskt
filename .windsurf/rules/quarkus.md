@@ -1,5 +1,6 @@
 ---
-trigger: model_decision
+trigger: glob
+globs: "*.kt"
 description: Quarkus development standards and instructions
 ---
 
