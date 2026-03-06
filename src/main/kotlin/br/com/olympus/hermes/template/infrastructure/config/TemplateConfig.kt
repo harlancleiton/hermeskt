@@ -1,7 +1,7 @@
-package br.com.olympus.hermes.shared.config
+package br.com.olympus.hermes.template.infrastructure.config
 
-import br.com.olympus.hermes.shared.domain.repositories.TemplateRepository
-import br.com.olympus.hermes.shared.domain.services.TemplateEngine
+import br.com.olympus.hermes.template.domain.repositories.TemplateRepository
+import br.com.olympus.hermes.template.domain.services.TemplateEngine
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Qualifier
 import jakarta.inject.Singleton
@@ -16,15 +16,15 @@ class TemplateConfig {
     @Produces
     @Singleton
     fun templateEngine(templateRepository: TemplateRepository): TemplateEngine =
-        TemplateEngine(templateRepository, placeholderRegex.toRegex())
+            TemplateEngine(templateRepository, placeholderRegex.toRegex())
 }
 
 @Qualifier
 @Retention(AnnotationRetention.RUNTIME)
 @Target(
-    AnnotationTarget.CLASS,
-    AnnotationTarget.FIELD,
-    AnnotationTarget.FUNCTION,
-    AnnotationTarget.VALUE_PARAMETER,
+        AnnotationTarget.CLASS,
+        AnnotationTarget.FIELD,
+        AnnotationTarget.FUNCTION,
+        AnnotationTarget.VALUE_PARAMETER,
 )
 annotation class TemplateMongo
