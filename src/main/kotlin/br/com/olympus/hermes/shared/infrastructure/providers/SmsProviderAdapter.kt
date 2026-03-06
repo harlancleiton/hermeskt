@@ -16,12 +16,11 @@ import org.eclipse.microprofile.config.inject.ConfigProperty
 
 @ApplicationScoped
 class SmsProviderAdapter(
-        @ConfigProperty(name = "hermes.provider.sms.twilio-account-sid")
-        private val accountSid: String,
-        @ConfigProperty(name = "hermes.provider.sms.twilio-auth-token")
-        private val authToken: String,
+    @ConfigProperty(name = "hermes.provider.sms.twilio-account-sid")
+    private val accountSid: String,
+    @ConfigProperty(name = "hermes.provider.sms.twilio-auth-token")
+    private val authToken: String,
 ) : NotificationProviderAdapter {
-
     private var initialized = false
 
     override fun supports(type: NotificationType): Boolean = type == NotificationType.SMS
@@ -29,33 +28,33 @@ class SmsProviderAdapter(
     override fun send(notification: Notification): Either<BaseError, ProviderReceipt> {
         val smsNotification = notification as SmsNotification
 
-        return Either.catch {
-            if (!initialized) {
-                Twilio.init(accountSid, authToken)
-                initialized = true
-            }
+        return Either
+            .catch {
+                if (!initialized) {
+                    Twilio.init(accountSid, authToken)
+                    initialized = true
+                }
 
-            val to = PhoneNumber(smsNotification.to.value)
-            val from = PhoneNumber(smsNotification.from.toString())
+                val to = PhoneNumber(smsNotification.to.value)
+                val from = PhoneNumber(smsNotification.from.toString())
 
-            val message =
-                    Message.creator(
-                                    to,
-                                    from,
-                                    smsNotification.content,
-                            )
-                            .create()
+                val message =
+                    Message
+                        .creator(
+                            to,
+                            from,
+                            smsNotification.content,
+                        ).create()
 
-            ProviderReceipt(
+                ProviderReceipt(
                     receiptId = message.sid,
                     provider = "twilio",
-            )
-        }
-                .mapLeft { exception ->
-                    DeliveryError(
-                            reason = exception.message ?: "Failed to send SMS via Twilio",
-                            cause = exception,
-                    )
-                }
+                )
+            }.mapLeft { exception ->
+                DeliveryError(
+                    reason = exception.message ?: "Failed to send SMS via Twilio",
+                    cause = exception,
+                )
+            }
     }
 }

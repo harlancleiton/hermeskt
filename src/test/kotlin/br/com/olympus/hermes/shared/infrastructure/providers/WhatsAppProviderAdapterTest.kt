@@ -12,24 +12,23 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
-import java.util.Date
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.Date
 
 class WhatsAppProviderAdapterTest {
-
     private lateinit var adapter: WhatsAppProviderAdapter
 
     @BeforeEach
     fun setup() {
         adapter =
-                WhatsAppProviderAdapter(
-                        accountSid = "test-sid",
-                        authToken = "test-token",
-                )
+            WhatsAppProviderAdapter(
+                accountSid = "test-sid",
+                authToken = "test-token",
+            )
         mockkStatic(Twilio::class)
         every { Twilio.init(any<String>(), any<String>()) } returns Unit
         mockkStatic(Message::class)
@@ -49,21 +48,21 @@ class WhatsAppProviderAdapterTest {
     @Test
     fun `should send WhatsApp message successfully and return receipt`() {
         val notification =
-                WhatsAppNotification(
-                        content = "Test WhatsApp Message",
-                        payload = emptyMap(),
-                        shippingReceipt = null,
-                        sentAt = null,
-                        deliveryAt = null,
-                        seenAt = null,
-                        id = EntityId.generate(),
-                        createdAt = Date(),
-                        updatedAt = Date(),
-                        from = BrazilianPhone.create("11999999999").getOrNull()!!,
-                        to = BrazilianPhone.create("11988888888").getOrNull()!!,
-                        templateName = "test_template",
-                        isNew = true,
-                )
+            WhatsAppNotification(
+                content = "Test WhatsApp Message",
+                payload = emptyMap(),
+                shippingReceipt = null,
+                sentAt = null,
+                deliveryAt = null,
+                seenAt = null,
+                id = EntityId.generate(),
+                createdAt = Date(),
+                updatedAt = Date(),
+                from = BrazilianPhone.create("11999999999").getOrNull()!!,
+                to = BrazilianPhone.create("11988888888").getOrNull()!!,
+                templateName = "test_template",
+                isNew = true,
+            )
 
         val messageMock = mockk<Message> { every { sid } returns "SM123" }
 
@@ -71,9 +70,9 @@ class WhatsAppProviderAdapterTest {
 
         every {
             Message.creator(
-                    any<com.twilio.type.PhoneNumber>(),
-                    any<com.twilio.type.PhoneNumber>(),
-                    "Test WhatsApp Message"
+                any<com.twilio.type.PhoneNumber>(),
+                any<com.twilio.type.PhoneNumber>(),
+                "Test WhatsApp Message",
             )
         } returns creatorMock
 
@@ -89,32 +88,32 @@ class WhatsAppProviderAdapterTest {
     @Test
     fun `should return DeliveryError when Twilio throws exception`() {
         val notification =
-                WhatsAppNotification(
-                        content = "Test WhatsApp Message",
-                        payload = emptyMap(),
-                        shippingReceipt = null,
-                        sentAt = null,
-                        deliveryAt = null,
-                        seenAt = null,
-                        id = EntityId.generate(),
-                        createdAt = Date(),
-                        updatedAt = Date(),
-                        from = BrazilianPhone.create("11999999999").getOrNull()!!,
-                        to = BrazilianPhone.create("11988888888").getOrNull()!!,
-                        templateName = "test_template",
-                        isNew = true,
-                )
+            WhatsAppNotification(
+                content = "Test WhatsApp Message",
+                payload = emptyMap(),
+                shippingReceipt = null,
+                sentAt = null,
+                deliveryAt = null,
+                seenAt = null,
+                id = EntityId.generate(),
+                createdAt = Date(),
+                updatedAt = Date(),
+                from = BrazilianPhone.create("11999999999").getOrNull()!!,
+                to = BrazilianPhone.create("11988888888").getOrNull()!!,
+                templateName = "test_template",
+                isNew = true,
+            )
 
         val creatorMock =
-                mockk<MessageCreator> {
-                    every { create() } throws RuntimeException("Twilio offline")
-                }
+            mockk<MessageCreator> {
+                every { create() } throws RuntimeException("Twilio offline")
+            }
 
         every {
             Message.creator(
-                    any<com.twilio.type.PhoneNumber>(),
-                    any<com.twilio.type.PhoneNumber>(),
-                    any<String>()
+                any<com.twilio.type.PhoneNumber>(),
+                any<com.twilio.type.PhoneNumber>(),
+                any<String>(),
             )
         } returns creatorMock
 

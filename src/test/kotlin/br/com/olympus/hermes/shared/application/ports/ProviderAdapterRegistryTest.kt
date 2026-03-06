@@ -10,17 +10,17 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ProviderAdapterRegistryTest {
-    private fun makeAdapter(type: NotificationType): NotificationProviderAdapter = mockk {
-        every { supports(type) } returns true
-        every { supports(neq(type)) } returns false
-    }
-
-    private fun makeRegistry(
-            vararg adapters: NotificationProviderAdapter
-    ): ProviderAdapterRegistry {
-        val instance: Instance<NotificationProviderAdapter> = mockk {
-            every { iterator() } returns adapters.toMutableList().iterator()
+    private fun makeAdapter(type: NotificationType): NotificationProviderAdapter =
+        mockk {
+            every { supports(type) } returns true
+            every { supports(neq(type)) } returns false
         }
+
+    private fun makeRegistry(vararg adapters: NotificationProviderAdapter): ProviderAdapterRegistry {
+        val instance: Instance<NotificationProviderAdapter> =
+            mockk {
+                every { iterator() } returns adapters.toMutableList().iterator()
+            }
         return ProviderAdapterRegistry(instance)
     }
 

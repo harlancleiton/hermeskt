@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class EmailProviderAdapterTest {
-
     private lateinit var adapter: EmailProviderAdapter
     private val host = "smtp.example.com"
     private val port = 587
@@ -31,14 +30,14 @@ class EmailProviderAdapterTest {
     @BeforeEach
     fun setup() {
         adapter =
-                EmailProviderAdapter(
-                        host = host,
-                        port = port,
-                        username = username,
-                        password = password,
-                        startTls = startTls,
-                        timeoutMs = timeoutMs
-                )
+            EmailProviderAdapter(
+                host = host,
+                port = port,
+                username = username,
+                password = password,
+                startTls = startTls,
+                timeoutMs = timeoutMs,
+            )
         mockkStatic(Transport::class)
     }
 
@@ -57,12 +56,12 @@ class EmailProviderAdapterTest {
         every { Transport.send(any()) } answers {}
 
         val notification =
-                mockk<EmailNotification> {
-                    every { from } returns Email.from("sender@example.com").getOrNull()!!
-                    every { to } returns Email.from("recipient@example.com").getOrNull()!!
-                    every { subject } returns EmailSubject.create("Test Subject").getOrNull()!!
-                    every { content } returns "This is a test email."
-                }
+            mockk<EmailNotification> {
+                every { from } returns Email.from("sender@example.com").getOrNull()!!
+                every { to } returns Email.from("recipient@example.com").getOrNull()!!
+                every { subject } returns EmailSubject.create("Test Subject").getOrNull()!!
+                every { content } returns "This is a test email."
+            }
 
         val result = adapter.send(notification)
 
@@ -78,12 +77,12 @@ class EmailProviderAdapterTest {
         every { Transport.send(any()) } throws RuntimeException(errorMessage)
 
         val notification =
-                mockk<EmailNotification> {
-                    every { from } returns Email.from("sender@example.com").getOrNull()!!
-                    every { to } returns Email.from("recipient@example.com").getOrNull()!!
-                    every { subject } returns EmailSubject.create("Test Subject").getOrNull()!!
-                    every { content } returns "This is a test email."
-                }
+            mockk<EmailNotification> {
+                every { from } returns Email.from("sender@example.com").getOrNull()!!
+                every { to } returns Email.from("recipient@example.com").getOrNull()!!
+                every { subject } returns EmailSubject.create("Test Subject").getOrNull()!!
+                every { content } returns "This is a test email."
+            }
 
         val result = adapter.send(notification)
 

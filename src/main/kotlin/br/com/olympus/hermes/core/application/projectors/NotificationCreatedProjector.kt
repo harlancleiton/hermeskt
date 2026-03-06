@@ -59,6 +59,7 @@ class NotificationCreatedProjector(
             view.type = event.type.name
             view.content = event.content
             view.payload = event.payload
+            view.status = "PENDING"
             view.createdAt = now
             view.updatedAt = now
 

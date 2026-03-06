@@ -13,17 +13,16 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.Message
-import com.google.firebase.messaging.Notification as FcmNotification
 import jakarta.enterprise.context.ApplicationScoped
-import java.io.FileInputStream
 import org.eclipse.microprofile.config.inject.ConfigProperty
+import java.io.FileInputStream
+import com.google.firebase.messaging.Notification as FcmNotification
 
 @ApplicationScoped
 class PushProviderAdapter(
-        @ConfigProperty(name = "hermes.provider.push.firebase-credentials-path", defaultValue = "")
-        private val credentialsPath: String,
+    @ConfigProperty(name = "hermes.provider.push.firebase-credentials-path", defaultValue = "")
+    private val credentialsPath: String,
 ) : NotificationProviderAdapter {
-
     private var initialized = false
 
     override fun supports(type: NotificationType): Boolean = type == NotificationType.PUSH
@@ -31,40 +30,43 @@ class PushProviderAdapter(
     override fun send(notification: Notification): Either<BaseError, ProviderReceipt> {
         val pushNotification = notification as PushNotification
 
-        return Either.catch {
-            initializeFirebaseOnce()
+        return Either
+            .catch {
+                initializeFirebaseOnce()
 
-            val fcmNotification =
-                    FcmNotification.builder()
-                            .setTitle(pushNotification.title)
-                            .setBody(pushNotification.content)
-                            .build()
+                val fcmNotification =
+                    FcmNotification
+                        .builder()
+                        .setTitle(pushNotification.title)
+                        .setBody(pushNotification.content)
+                        .build()
 
-            val messageBuilder =
-                    Message.builder()
-                            .setToken(pushNotification.deviceToken.value)
-                            .setNotification(fcmNotification)
+                val messageBuilder =
+                    Message
+                        .builder()
+                        .setToken(pushNotification.deviceToken.value)
+                        .setNotification(fcmNotification)
 
-            // Add custom data payload if not empty
-            if (pushNotification.data.isNotEmpty()) {
-                messageBuilder.putAllData(pushNotification.data)
-            }
+                // Add custom data payload if not empty
+                if (pushNotification.data.isNotEmpty()) {
+                    messageBuilder.putAllData(pushNotification.data)
+                }
 
-            val message = messageBuilder.build()
-            val messageId = FirebaseMessaging.getInstance().send(message)
+                val message = messageBuilder.build()
+                val messageId = FirebaseMessaging.getInstance().send(message)
 
-            ProviderReceipt(
+                ProviderReceipt(
                     receiptId = messageId,
                     provider = "firebase",
-            )
-        }
-                .mapLeft { exception ->
-                    DeliveryError(
-                            reason = exception.message
-                                            ?: "Failed to send push notification via Firebase",
-                            cause = exception,
-                    )
-                }
+                )
+            }.mapLeft { exception ->
+                DeliveryError(
+                    reason =
+                        exception.message
+                            ?: "Failed to send push notification via Firebase",
+                    cause = exception,
+                )
+            }
     }
 
     private fun initializeFirebaseOnce() {

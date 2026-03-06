@@ -60,6 +60,7 @@ class NotificationSentProjector(
                     ?: raise(NotificationNotFoundError(aggregateIdStr))
 
             view.sentAt = event.sentAt
+            view.status = "SENT"
             viewRepository.upsert(view).bind()
 
             Span.current().setAttribute("notification.view.upserted", true)

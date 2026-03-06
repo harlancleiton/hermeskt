@@ -15,15 +15,14 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
-import java.util.Date
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.Date
 
 class PushProviderAdapterTest {
-
     private lateinit var adapter: PushProviderAdapter
 
     @BeforeEach
@@ -55,24 +54,24 @@ class PushProviderAdapterTest {
         val mockFirebaseMessaging = mockk<FirebaseMessaging>()
         every { FirebaseMessaging.getInstance() } returns mockFirebaseMessaging
         every { mockFirebaseMessaging.send(any<Message>()) } returns
-                "projects/my-project/messages/12345"
+            "projects/my-project/messages/12345"
 
         val pushNotification =
-                PushNotification(
-                        id = EntityId.generate(),
-                        content = "Update available",
-                        payload = emptyMap(),
-                        title = "New Update",
-                        deviceToken = DeviceToken.create("token123").getOrNull()!!,
-                        data = mapOf("key" to "value"),
-                        shippingReceipt = null,
-                        sentAt = null,
-                        deliveryAt = null,
-                        seenAt = null,
-                        createdAt = Date(),
-                        updatedAt = Date(),
-                        isNew = true,
-                )
+            PushNotification(
+                id = EntityId.generate(),
+                content = "Update available",
+                payload = emptyMap(),
+                title = "New Update",
+                deviceToken = DeviceToken.create("token123").getOrNull()!!,
+                data = mapOf("key" to "value"),
+                shippingReceipt = null,
+                sentAt = null,
+                deliveryAt = null,
+                seenAt = null,
+                createdAt = Date(),
+                updatedAt = Date(),
+                isNew = true,
+            )
 
         // When
         val result = adapter.send(pushNotification)
@@ -96,24 +95,24 @@ class PushProviderAdapterTest {
         val mockFirebaseMessaging = mockk<FirebaseMessaging>()
         every { FirebaseMessaging.getInstance() } returns mockFirebaseMessaging
         every { mockFirebaseMessaging.send(any<Message>()) } throws
-                RuntimeException("Firebase error")
+            RuntimeException("Firebase error")
 
         val pushNotification =
-                PushNotification(
-                        id = EntityId.generate(),
-                        content = "Update available",
-                        payload = emptyMap(),
-                        title = "New Update",
-                        deviceToken = DeviceToken.create("token123").getOrNull()!!,
-                        data = emptyMap(), // Test empty data branch
-                        shippingReceipt = null,
-                        sentAt = null,
-                        deliveryAt = null,
-                        seenAt = null,
-                        createdAt = Date(),
-                        updatedAt = Date(),
-                        isNew = true,
-                )
+            PushNotification(
+                id = EntityId.generate(),
+                content = "Update available",
+                payload = emptyMap(),
+                title = "New Update",
+                deviceToken = DeviceToken.create("token123").getOrNull()!!,
+                data = emptyMap(), // Test empty data branch
+                shippingReceipt = null,
+                sentAt = null,
+                deliveryAt = null,
+                seenAt = null,
+                createdAt = Date(),
+                updatedAt = Date(),
+                isNew = true,
+            )
 
         // When
         val result = adapter.send(pushNotification)

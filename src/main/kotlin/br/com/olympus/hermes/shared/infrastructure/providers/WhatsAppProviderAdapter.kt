@@ -16,12 +16,11 @@ import org.eclipse.microprofile.config.inject.ConfigProperty
 
 @ApplicationScoped
 class WhatsAppProviderAdapter(
-        @ConfigProperty(name = "hermes.provider.whatsapp.twilio-account-sid")
-        private val accountSid: String,
-        @ConfigProperty(name = "hermes.provider.whatsapp.twilio-auth-token")
-        private val authToken: String,
+    @ConfigProperty(name = "hermes.provider.whatsapp.twilio-account-sid")
+    private val accountSid: String,
+    @ConfigProperty(name = "hermes.provider.whatsapp.twilio-auth-token")
+    private val authToken: String,
 ) : NotificationProviderAdapter {
-
     private var initialized = false
 
     override fun supports(type: NotificationType): Boolean = type == NotificationType.WHATSAPP
@@ -29,35 +28,36 @@ class WhatsAppProviderAdapter(
     override fun send(notification: Notification): Either<BaseError, ProviderReceipt> {
         val whatsAppNotification = notification as WhatsAppNotification
 
-        return Either.catch {
-            if (!initialized) {
-                Twilio.init(accountSid, authToken)
-                initialized = true
-            }
+        return Either
+            .catch {
+                if (!initialized) {
+                    Twilio.init(accountSid, authToken)
+                    initialized = true
+                }
 
-            // Twilio WhatsApp API requires the "whatsapp:" prefix
-            val to = PhoneNumber("whatsapp:${whatsAppNotification.to.value}")
-            val from = PhoneNumber("whatsapp:${whatsAppNotification.from.value}")
+                // Twilio WhatsApp API requires the "whatsapp:" prefix
+                val to = PhoneNumber("whatsapp:${whatsAppNotification.to.value}")
+                val from = PhoneNumber("whatsapp:${whatsAppNotification.from.value}")
 
-            val message =
-                    Message.creator(
-                                    to,
-                                    from,
-                                    whatsAppNotification.content,
-                            )
-                            .create()
+                val message =
+                    Message
+                        .creator(
+                            to,
+                            from,
+                            whatsAppNotification.content,
+                        ).create()
 
-            ProviderReceipt(
+                ProviderReceipt(
                     receiptId = message.sid,
                     provider = "twilio-whatsapp",
-            )
-        }
-                .mapLeft { exception ->
-                    DeliveryError(
-                            reason = exception.message
-                                            ?: "Failed to send WhatsApp message via Twilio",
-                            cause = exception,
-                    )
-                }
+                )
+            }.mapLeft { exception ->
+                DeliveryError(
+                    reason =
+                        exception.message
+                            ?: "Failed to send WhatsApp message via Twilio",
+                    cause = exception,
+                )
+            }
     }
 }

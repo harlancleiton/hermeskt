@@ -12,24 +12,23 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
-import java.util.Date
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.Date
 
 class SmsProviderAdapterTest {
-
     private lateinit var adapter: SmsProviderAdapter
 
     @BeforeEach
     fun setup() {
         adapter =
-                SmsProviderAdapter(
-                        accountSid = "test-sid",
-                        authToken = "test-token",
-                )
+            SmsProviderAdapter(
+                accountSid = "test-sid",
+                authToken = "test-token",
+            )
         mockkStatic(Twilio::class)
         every { Twilio.init(any<String>(), any<String>()) } returns Unit
         mockkStatic(Message::class)
@@ -49,20 +48,20 @@ class SmsProviderAdapterTest {
     @Test
     fun `should send SMS successfully and return receipt`() {
         val notification =
-                SmsNotification(
-                        content = "Test SMS",
-                        payload = emptyMap(),
-                        shippingReceipt = null,
-                        sentAt = null,
-                        deliveryAt = null,
-                        seenAt = null,
-                        id = EntityId.from("e8febe2c-0e3c-449e-b816-bf7cd0ffed1f").getOrNull()!!,
-                        createdAt = Date(),
-                        updatedAt = Date(),
-                        from = 12345u,
-                        to = BrazilianPhone.create("11999999999").getOrNull()!!,
-                        isNew = true,
-                )
+            SmsNotification(
+                content = "Test SMS",
+                payload = emptyMap(),
+                shippingReceipt = null,
+                sentAt = null,
+                deliveryAt = null,
+                seenAt = null,
+                id = EntityId.from("e8febe2c-0e3c-449e-b816-bf7cd0ffed1f").getOrNull()!!,
+                createdAt = Date(),
+                updatedAt = Date(),
+                from = 12345u,
+                to = BrazilianPhone.create("11999999999").getOrNull()!!,
+                isNew = true,
+            )
 
         val messageMock = mockk<Message> { every { sid } returns "SM123" }
 
@@ -70,9 +69,9 @@ class SmsProviderAdapterTest {
 
         every {
             Message.creator(
-                    any<com.twilio.type.PhoneNumber>(),
-                    any<com.twilio.type.PhoneNumber>(),
-                    "Test SMS"
+                any<com.twilio.type.PhoneNumber>(),
+                any<com.twilio.type.PhoneNumber>(),
+                "Test SMS",
             )
         } returns creatorMock
 
@@ -88,31 +87,31 @@ class SmsProviderAdapterTest {
     @Test
     fun `should return DeliveryError when Twilio throws exception`() {
         val notification =
-                SmsNotification(
-                        content = "Test SMS",
-                        payload = emptyMap(),
-                        shippingReceipt = null,
-                        sentAt = null,
-                        deliveryAt = null,
-                        seenAt = null,
-                        id = EntityId.from("e8febe2c-0e3c-449e-b816-bf7cd0ffed1f").getOrNull()!!,
-                        createdAt = Date(),
-                        updatedAt = Date(),
-                        from = 12345u,
-                        to = BrazilianPhone.create("11999999999").getOrNull()!!,
-                        isNew = true,
-                )
+            SmsNotification(
+                content = "Test SMS",
+                payload = emptyMap(),
+                shippingReceipt = null,
+                sentAt = null,
+                deliveryAt = null,
+                seenAt = null,
+                id = EntityId.from("e8febe2c-0e3c-449e-b816-bf7cd0ffed1f").getOrNull()!!,
+                createdAt = Date(),
+                updatedAt = Date(),
+                from = 12345u,
+                to = BrazilianPhone.create("11999999999").getOrNull()!!,
+                isNew = true,
+            )
 
         val creatorMock =
-                mockk<MessageCreator> {
-                    every { create() } throws RuntimeException("Twilio offline")
-                }
+            mockk<MessageCreator> {
+                every { create() } throws RuntimeException("Twilio offline")
+            }
 
         every {
             Message.creator(
-                    any<com.twilio.type.PhoneNumber>(),
-                    any<com.twilio.type.PhoneNumber>(),
-                    any<String>()
+                any<com.twilio.type.PhoneNumber>(),
+                any<com.twilio.type.PhoneNumber>(),
+                any<String>(),
             )
         } returns creatorMock
 

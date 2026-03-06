@@ -38,4 +38,68 @@ class MongoNotificationViewRepository : NotificationViewRepository {
                 view.persistOrUpdate()
                 Unit
             }.mapLeft { ex -> PersistenceError(ex.message ?: "Unknown error", ex) }
+
+    override fun findAll(
+        pageIndex: Int,
+        pageSize: Int,
+        status: String?,
+        type: String?,
+    ): Either<
+        BaseError,
+        br.com.olympus.hermes.shared.domain.repositories.PaginatedResult<NotificationView>,
+    > =
+        Either
+            .catch {
+                val query = mutableListOf<String>()
+                val params = mutableMapOf<String, Any>()
+
+                if (status != null) {
+                    query.add("status = :status")
+                    params["status"] = status
+                }
+                if (type != null) {
+                    query.add("type = :type")
+                    params["type"] = type
+                }
+
+                val panacheQuery =
+                    if (query.isEmpty()) {
+                        NotificationView.findAll()
+                    } else {
+                        NotificationView.find(query.joinToString(" and "), params)
+                    }
+
+                val count = panacheQuery.count()
+                val items = panacheQuery.page(pageIndex, pageSize).list()
+
+                br.com.olympus.hermes.shared.domain.repositories.PaginatedResult(
+                    items = items,
+                    totalCount = count,
+                    pageIndex = pageIndex,
+                    pageSize = pageSize,
+                )
+            }.mapLeft { ex -> PersistenceError(ex.message ?: "Unknown error", ex) }
+
+    override fun countAll(): Either<BaseError, Long> =
+        Either.catch { NotificationView.count() }.mapLeft { ex ->
+            PersistenceError(ex.message ?: "Unknown error", ex)
+        }
+
+    override fun updateStatus(
+        id: EntityId,
+        status: String,
+        failureReason: String?,
+    ): Either<BaseError, Unit> =
+        Either
+            .catch {
+                val view = NotificationView.find("_id", id.value.toString()).firstResult()
+                if (view != null) {
+                    view.status = status
+                    if (failureReason != null) {
+                        view.failureReason = failureReason
+                    }
+                    view.persistOrUpdate()
+                }
+                Unit
+            }.mapLeft { ex -> PersistenceError(ex.message ?: "Unknown error", ex) }
 }

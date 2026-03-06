@@ -74,6 +74,10 @@ class NotificationView : PanacheMongoEntityBase() {
     @BsonProperty("seenAt")
     var seenAt: Date? = null
 
+    /** Status of the notification: PENDING, SENT, DELIVERED, FAILED. */
+    @BsonProperty("status")
+    var status: String = "PENDING"
+
     /** Reason the delivery failed. Null if no failure has occurred. */
     @BsonProperty("failureReason")
     var failureReason: String? = null

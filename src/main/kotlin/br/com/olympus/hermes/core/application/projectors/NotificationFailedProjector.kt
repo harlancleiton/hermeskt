@@ -54,6 +54,7 @@ class NotificationFailedProjector(
                     ?: raise(NotificationNotFoundError(event.aggregateId))
 
             view.failureReason = event.reason
+            view.status = "FAILED"
             viewRepository.upsert(view).bind()
 
             Span.current().setAttribute("notification.view.upserted", true)
