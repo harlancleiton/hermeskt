@@ -8,11 +8,11 @@ import br.com.olympus.hermes.core.application.queries.GetNotificationQueryHandle
 import br.com.olympus.hermes.core.application.queries.ListNotificationsQuery
 import br.com.olympus.hermes.core.application.queries.ListNotificationsQueryHandler
 import br.com.olympus.hermes.infrastructure.rest.exceptions.DomainException
+import br.com.olympus.hermes.shared.application.repositories.PaginatedResult
 import br.com.olympus.hermes.shared.domain.exceptions.InvalidNotificationTypeError
 import br.com.olympus.hermes.shared.domain.exceptions.NotificationNotFoundError
 import br.com.olympus.hermes.shared.domain.exceptions.PersistenceError
 import br.com.olympus.hermes.shared.domain.factories.NotificationType
-import br.com.olympus.hermes.shared.domain.repositories.PaginatedResult
 import br.com.olympus.hermes.shared.infrastructure.readmodel.NotificationView
 import io.mockk.every
 import io.mockk.mockk
