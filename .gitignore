@@ -43,3 +43,5 @@ nb-configuration.xml
 /.quarkus/cli/plugins/
 # TLS Certificates
 .certs/
+firebase-credentials.json
+twilio_*.json
