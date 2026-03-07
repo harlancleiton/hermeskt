@@ -20,49 +20,40 @@ Hermes is a backend notification service that handles the creation, persistence,
 
 ## Architecture
 
-The project follows a Hexagonal (Ports & Adapters) structure layered over DDD and Event Sourcing:
+Hermes follows a **Modular Monolith** architecture built on **Domain-Driven Design (DDD)** principles. The system is organized into distinct, highly cohesive **Bounded Contexts** (`notification`, `template`, and `shared`), each encapsulating its own **Hexagonal Architecture** layers.
 
-```
-Inbound (REST)
-     │
-     ▼
- Application Layer  ←→  Domain Layer  ←→  Infrastructure Layer
- (CQRS Handlers)        (Entities,         (DynamoDB Adapters,
-                         Events,            Event Store)
-                         Factories,
-                         Repositories ← port interfaces)
-```
+### System Design
+
+- **Notification Context** — Manages creation, persistence, and delivery tracking of notifications.
+- **Template Context** — Handles message templates and rendering logic.
+- **Shared Kernel** — Contains generic building blocks (BaseEntity, DomainEvent, CQRS interfaces) used across all contexts.
 
 ### Key design decisions
 
 | Concern | Approach |
 |---|---|
+| Architecture | Modular Monolith with Hexagonal Layers |
 | Error handling | `Either<BaseError, T>` with Arrow-kt; `zipOrAccumulate` for parallel validation |
-| Persistence | Amazon DynamoDB Enhanced Client, single-table design |
-| Domain events | Sealed `DomainEvent` hierarchy; stored in a dedicated event store table |
-| Optimistic concurrency | `expectedVersion` on the `EventStore.append` port |
-| Notification factories | `NotificationFactory<T>` per channel, registered in `NotificationFactoryRegistry` |
+| Persistence | Amazon DynamoDB (Write/Event Store) + MongoDB (Read/View Store) |
+| Messaging | Apache Kafka for internal domain event propagation |
+| CQRS | Strict separation of commands and queries via dedicated handlers |
 
 ### Package structure
 
 ```
 src/main/kotlin/br/com/olympus/hermes/
-├── core/
-│   └── application/commands/       # Feature-specific CQRS handlers
-└── shared/
-    ├── application/
-    │   ├── cqrs/                   # Command / CommandHandler interfaces
-    │   └── ports/                  # Output port interfaces (DomainEventPublisher)
-    ├── config/                     # CDI producers and custom qualifiers
-    ├── domain/
-    │   ├── entities/               # BaseEntity, AggregateRoot, Notification hierarchy
-    │   ├── events/                 # Sealed DomainEvent hierarchy + EventWrapper
-    │   ├── exceptions/             # Sealed BaseError hierarchy (ClientError / ServerError)
-    │   ├── factories/              # NotificationFactory + Registry
-    │   ├── repositories/           # Port interfaces (NotificationRepository, EventStore)
-    │   └── valueobjects/           # EntityId, Email, BrazilianPhone, EmailSubject
-    └── infrastructure/
-        └── persistence/            # DynamoDB implementations, record models, codecs
+├── notification/               # Notification Bounded Context
+│   ├── application/            # Command/Query handlers, Projectors
+│   ├── domain/                 # Entities, Events, Repository Ports
+│   └── infrastructure/         # Controllers, Kafka Consumers, DB Adapters
+├── template/                   # Template Bounded Context
+│   ├── application/            # Template rendering and management
+│   ├── domain/                 # Template entities and ports
+│   └── infrastructure/         # MongoDB adapters and REST endpoints
+└── shared/                     # Shared Kernel
+    ├── domain/                 # BaseEntity, DomainEvent, BaseError
+    ├── application/            # CQRS interfaces, Global ports
+    └── infrastructure/         # Global config, Exception mappers
 ```
 
 ## Prerequisites
