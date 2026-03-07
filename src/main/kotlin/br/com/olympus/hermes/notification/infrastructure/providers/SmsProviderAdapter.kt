@@ -35,7 +35,7 @@ class SmsProviderAdapter(
                     initialized = true
                 }
 
-                val to = PhoneNumber(smsNotification.to.value)
+                val to = PhoneNumber("55${smsNotification.to.value}")
                 val from = PhoneNumber(smsNotification.from.toString())
 
                 val message =
