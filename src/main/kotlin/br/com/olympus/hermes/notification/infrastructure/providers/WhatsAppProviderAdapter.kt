@@ -11,6 +11,7 @@ import br.com.olympus.hermes.shared.domain.exceptions.DeliveryError
 import com.twilio.Twilio
 import com.twilio.rest.api.v2010.account.Message
 import com.twilio.type.PhoneNumber
+import io.quarkus.logging.Log
 import jakarta.enterprise.context.ApplicationScoped
 import org.eclipse.microprofile.config.inject.ConfigProperty
 
@@ -20,12 +21,15 @@ class WhatsAppProviderAdapter(
     private val accountSid: String,
     @ConfigProperty(name = "hermes.provider.whatsapp.twilio-auth-token")
     private val authToken: String,
+    @ConfigProperty(name = "hermes.provider.whatsapp.from-number")
+    private val fromNumber: String,
 ) : NotificationProviderAdapter {
     private var initialized = false
 
     override fun supports(type: NotificationType): Boolean = type == NotificationType.WHATSAPP
 
     override fun send(notification: Notification): Either<BaseError, ProviderReceipt> {
+        Log.info("Sending WhatsApp notification: ${notification.id}")
         val whatsAppNotification = notification as WhatsAppNotification
 
         return Either
@@ -35,9 +39,9 @@ class WhatsAppProviderAdapter(
                     initialized = true
                 }
 
-                // Twilio WhatsApp API requires the "whatsapp:" prefix
-                val to = PhoneNumber("whatsapp:${whatsAppNotification.to.value}")
-                val from = PhoneNumber("whatsapp:${whatsAppNotification.from.value}")
+                // TODO add county to `to` and `from`
+                val to = PhoneNumber("whatsapp:+55${whatsAppNotification.to.value}")
+                val from = PhoneNumber("whatsapp:$fromNumber")
 
                 val message =
                     Message
@@ -50,6 +54,14 @@ class WhatsAppProviderAdapter(
                 ProviderReceipt(
                     receiptId = message.sid,
                     provider = "twilio-whatsapp",
+                )
+            }.onRight {
+                Log.info(
+                    "Success sending WhatsApp message ${notification.id} via Twilio: ${it.receiptId}",
+                )
+            }.onLeft {
+                Log.error(
+                    "Failed to send WhatsApp message ${notification.id} via Twilio: ${it.message}",
                 )
             }.mapLeft { exception ->
                 DeliveryError(
