@@ -28,6 +28,7 @@ class WhatsAppProviderAdapterTest {
             WhatsAppProviderAdapter(
                 accountSid = "test-sid",
                 authToken = "test-token",
+                fromNumber = "+14123456789",
             )
         mockkStatic(Twilio::class)
         every { Twilio.init(any<String>(), any<String>()) } returns Unit
