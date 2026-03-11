@@ -59,8 +59,8 @@ class WhatsAppProviderAdapterTest {
                 id = EntityId.generate(),
                 createdAt = Date(),
                 updatedAt = Date(),
-                from = BrazilianPhone.create("11999999999").getOrNull()!!,
-                to = BrazilianPhone.create("11988888888").getOrNull()!!,
+                from = BrazilianPhone.create("11999999999").getOrElse { error("Invalid test phone: $it") },
+                to = BrazilianPhone.create("11988888888").getOrElse { error("Invalid test phone: $it") },
                 templateName = "test_template",
                 isNew = true,
             )
@@ -99,8 +99,8 @@ class WhatsAppProviderAdapterTest {
                 id = EntityId.generate(),
                 createdAt = Date(),
                 updatedAt = Date(),
-                from = BrazilianPhone.create("11999999999").getOrNull()!!,
-                to = BrazilianPhone.create("11988888888").getOrNull()!!,
+                from = BrazilianPhone.create("11999999999").getOrElse { error("Invalid test phone: $it") },
+                to = BrazilianPhone.create("11988888888").getOrElse { error("Invalid test phone: $it") },
                 templateName = "test_template",
                 isNew = true,
             )

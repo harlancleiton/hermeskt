@@ -21,6 +21,7 @@ class SmsProviderAdapter(
     @ConfigProperty(name = "hermes.provider.sms.twilio-auth-token")
     private val authToken: String,
 ) : NotificationProviderAdapter {
+    @Volatile
     private var initialized = false
 
     override fun supports(type: NotificationType): Boolean = type == NotificationType.SMS
@@ -35,7 +36,7 @@ class SmsProviderAdapter(
                     initialized = true
                 }
 
-                val to = PhoneNumber("55${smsNotification.to.value}")
+                val to = PhoneNumber("+55${smsNotification.to.value}")
                 val from = PhoneNumber(smsNotification.from.toString())
 
                 val message =

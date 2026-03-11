@@ -24,6 +24,7 @@ class WhatsAppProviderAdapter(
     @ConfigProperty(name = "hermes.provider.whatsapp.from-number")
     private val fromNumber: String,
 ) : NotificationProviderAdapter {
+    @Volatile
     private var initialized = false
 
     override fun supports(type: NotificationType): Boolean = type == NotificationType.WHATSAPP
@@ -39,7 +40,7 @@ class WhatsAppProviderAdapter(
                     initialized = true
                 }
 
-                // TODO add county to `to` and `from`
+                // TODO: add country prefix to `to` based on notification metadata
                 val to = PhoneNumber("whatsapp:+55${whatsAppNotification.to.value}")
                 val from = PhoneNumber("whatsapp:$fromNumber")
 
