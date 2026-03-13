@@ -1,5 +1,6 @@
 package br.com.olympus.hermes.notification.infrastructure.providers
 
+import arrow.core.getOrElse
 import br.com.olympus.hermes.notification.domain.entities.WhatsAppNotification
 import br.com.olympus.hermes.notification.domain.valueobjects.BrazilianPhone
 import br.com.olympus.hermes.shared.domain.core.NotificationType
