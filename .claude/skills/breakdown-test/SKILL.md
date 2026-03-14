@@ -30,18 +30,18 @@ Before using this prompt, ensure you have:
 
 ### Core Feature Documents
 
-1. **Feature PRD**: `/docs/ways-of-work/plan/{epic-name}/{feature-name}.md`
-2. **Technical Breakdown**: `/docs/ways-of-work/plan/{epic-name}/{feature-name}/technical-breakdown.md`
-3. **Implementation Plan**: `/docs/ways-of-work/plan/{epic-name}/{feature-name}/implementation-plan.md`
-4. **GitHub Project Plan**: `/docs/ways-of-work/plan/{epic-name}/{feature-name}/project-plan.md`
+1. **Feature PRD**: `/docs/ways-of-work/plan/{e1-epic-name}/{f1-feature-name}.md`
+2. **Technical Breakdown**: `/docs/ways-of-work/plan/{e1-epic-name}/{f1-feature-name}/technical-breakdown.md`
+3. **Implementation Plan**: `/docs/ways-of-work/plan/{e1-epic-name}/{f1-feature-name}/implementation-plan.md`
+4. **GitHub Project Plan**: `/docs/ways-of-work/plan/{e1-epic-name}/{f1-feature-name}/project-plan.md`
 
 ## Output Format
 
 Create comprehensive test planning documentation:
 
-1. **Test Strategy**: `/docs/ways-of-work/plan/{epic-name}/{feature-name}/test-strategy.md`
-2. **Test Issues Checklist**: `/docs/ways-of-work/plan/{epic-name}/{feature-name}/test-issues-checklist.md`
-3. **Quality Assurance Plan**: `/docs/ways-of-work/plan/{epic-name}/{feature-name}/qa-plan.md`
+1. **Test Strategy**: `/docs/ways-of-work/plan/{e1-epic-name}/{f1-feature-name}/test-strategy.md`
+2. **Test Issues Checklist**: `/docs/ways-of-work/plan/{e1-epic-name}/{f1-feature-name}/test-issues-checklist.md`
+3. **Quality Assurance Plan**: `/docs/ways-of-work/plan/{e1-epic-name}/{f1-feature-name}/qa-plan.md`
 
 ### Test Strategy Structure
 

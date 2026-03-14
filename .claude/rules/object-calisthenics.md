@@ -1,7 +1,6 @@
 ---
-trigger: glob
-globs: "*.kt"
-description: Enforces Object Calisthenics principles for business domain code to ensure clean, maintainable, and robust code
+paths:
+  - "**/*.kt"
 ---
 
 # Object Calisthenics Rules

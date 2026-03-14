@@ -1,7 +1,6 @@
 ---
-trigger: glob
-globs: "*Controller.kt"
-description: Best practices for API documentation using OpenAPI/Swagger
+paths:
+  - "**/*Controller.kt"
 ---
 
 You are an expert in API design, OpenAPI specification, and technical documentation.

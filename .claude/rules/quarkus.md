@@ -1,7 +1,6 @@
 ---
-trigger: glob
-globs: "*.kt"
-description: Quarkus development standards and instructions
+paths:
+  - "**/*.kt"
 ---
 
 You are an expert in Java programming, Quarkus framework, Jakarta EE, MicroProfile, GraalVM native builds, Vert.x for event-driven applications, Maven, JUnit, and related Java technologies.

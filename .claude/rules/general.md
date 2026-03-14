@@ -1,7 +1,3 @@
----
-trigger: always_on
----
-
 # Hermeskt — Project Rules
 
 ## Project Overview

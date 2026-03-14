@@ -1,7 +1,6 @@
 ---
-trigger: glob
-globs: "*.kt"
-description: SOLID design principles
+paths:
+  - "**/*.kt"
 ---
 
 # SOLID Design Principles - Coding Assistant Guidelines

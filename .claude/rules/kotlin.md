@@ -1,7 +1,6 @@
 ---
-trigger: glob
-globs: *.kt
-description: Kotlin — General Coding Instructions
+paths:
+  - "**/*.kt"
 ---
 
 ## Language Overview
