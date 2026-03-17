@@ -9,7 +9,12 @@ import br.com.olympus.hermes.notification.domain.factories.NotificationFactoryRe
 import br.com.olympus.hermes.notification.domain.repositories.NotificationRepository
 import br.com.olympus.hermes.shared.application.ports.DomainEventPublisher
 import br.com.olympus.hermes.shared.domain.core.NotificationType
+import br.com.olympus.hermes.shared.domain.exceptions.EventPublishingError
+import br.com.olympus.hermes.shared.domain.exceptions.FactoryNotFoundError
+import br.com.olympus.hermes.shared.domain.exceptions.PersistenceError
+import br.com.olympus.hermes.shared.domain.exceptions.ValidationErrors
 import io.mockk.*
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -126,5 +131,100 @@ class CreateNotificationHandlerTest {
         assert(result.isRight())
         verify { templateResolver.resolve(templateName, NotificationType.EMAIL, payload) }
         verify { factory.create(any()) }
+    }
+
+    @Test
+    fun `should return Left when factory registry does not have factory for type`() {
+        // Given
+        val command =
+            CreateNotificationCommand.Push(
+                id = UUID.randomUUID().toString(),
+                deviceToken = "device-token",
+                title = "title",
+                content = "body",
+            )
+        val error = FactoryNotFoundError(NotificationType.PUSH)
+
+        every { factoryRegistry.getFactory<Notification>(NotificationType.PUSH) } returns Either.Left(error)
+
+        // When
+        val result = handler.handle(command)
+
+        // Then
+        assertTrue(result.isLeft())
+        verify(exactly = 0) { repository.save(any()) }
+    }
+
+    @Test
+    fun `should return Left when factory create fails validation`() {
+        // Given
+        val command =
+            CreateNotificationCommand.Sms(
+                id = UUID.randomUUID().toString(),
+                content = "Hello",
+                from = 12345u,
+                to = "invalid-phone",
+            )
+        val error = ValidationErrors(emptyList())
+
+        every { factoryRegistry.getFactory<Notification>(NotificationType.SMS) } returns Either.Right(factory)
+        every { factory.create(any()) } returns Either.Left(error)
+
+        // When
+        val result = handler.handle(command)
+
+        // Then
+        assertTrue(result.isLeft())
+        verify(exactly = 0) { repository.save(any()) }
+    }
+
+    @Test
+    fun `should return Left when repository save fails`() {
+        // Given
+        val command =
+            CreateNotificationCommand.Sms(
+                id = UUID.randomUUID().toString(),
+                content = "Hello",
+                from = 12345u,
+                to = "+5511999999999",
+            )
+        val notification = mockk<Notification>(relaxed = true)
+        val error = PersistenceError("DynamoDB write failed")
+
+        every { factoryRegistry.getFactory<Notification>(NotificationType.SMS) } returns Either.Right(factory)
+        every { factory.create(any()) } returns Either.Right(notification)
+        every { repository.save(notification) } returns Either.Left(error)
+
+        // When
+        val result = handler.handle(command)
+
+        // Then
+        assertTrue(result.isLeft())
+        verify(exactly = 0) { notification.commit(any()) }
+    }
+
+    @Test
+    fun `should return Left when commit fails to publish events`() {
+        // Given
+        val command =
+            CreateNotificationCommand.Sms(
+                id = UUID.randomUUID().toString(),
+                content = "Hello",
+                from = 12345u,
+                to = "+5511999999999",
+            )
+        val notification = mockk<Notification>(relaxed = true)
+        val error = EventPublishingError("Kafka broker unavailable")
+
+        every { factoryRegistry.getFactory<Notification>(NotificationType.SMS) } returns Either.Right(factory)
+        every { factory.create(any()) } returns Either.Right(notification)
+        every { repository.save(notification) } returns Either.Right(notification)
+        every { notification.commit(publisher) } returns Either.Left(error)
+
+        // When
+        val result = handler.handle(command)
+
+        // Then
+        assertTrue(result.isLeft())
     }
 }
